@@ -1,0 +1,12 @@
+Checks: >
+  *,
+  -modernize-*,
+  -cppcoreguidelines-*,
+  -readability-implicit-bool-conversion,
+  -readability-uppercase-literal-suffix,
+  -fuchsia-*,
+  bugprone-*,
+  performance-*,
+  portability-*,
+  readability-*
+WarningsAsErrors: '*'
