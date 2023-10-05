@@ -1,0 +1,25 @@
+name: Lint and Format with Clang Tools
+
+on: [push, pull_request]
+
+jobs:
+  clang-tools:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install clang tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format clang-tidy
+
+    - name: Check code formatting
+      run: |
+        find . -name '*.c' | xargs clang-format -style=file -i .github/workflows/.clang-format
+        git diff --exit-code
+    
+    - name: Run clang-tidy
+      run: |
+        find . -name '*.c' -exec clang-tidy {} -config="$(cat .github/workflows/.clang-tidy)" \;
