@@ -17,9 +17,9 @@ jobs:
 
     - name: Check code formatting
       run: |
-        find . -name '*.c' | xargs clang-format -style=file -i .github/workflows/.clang-format
+        find . -name '*.c' | xargs clang-format -style=.github/workflows/.clang-format -i
         git diff --exit-code
-    
+
     - name: Run clang-tidy
       run: |
         find . -name '*.c' -exec clang-tidy {} -config="$(cat .github/workflows/.clang-tidy)" \;
