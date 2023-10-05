@@ -1,0 +1,12 @@
+Language:        C
+UseTab:          Always
+IndentWidth:     4
+TabWidth:        4
+ContinuationIndentWidth: 4
+IndentCaseLabels: true
+# Place the pointer * to the left.
+DerivePointerAlignment: false
+PointerAlignment: Left
+BreakBeforeBraces: Allman
+SortIncludes: true
+IncludeBlocks: Preserve
