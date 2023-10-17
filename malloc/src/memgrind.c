@@ -19,3 +19,8 @@ and then reporting the average time needed for each task.
 You may use gettimeofday() or similar functions to obtain timing information.
 
 **/
+
+int main(void) {
+    malloc(5);
+    
+}
