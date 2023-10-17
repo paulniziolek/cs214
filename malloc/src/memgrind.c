@@ -23,4 +23,5 @@ You may use gettimeofday() or similar functions to obtain timing information.
 int main(void) {
     malloc(5);
     
+    return 0;
 }
