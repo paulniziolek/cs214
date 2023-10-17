@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "mymalloc.h"
-
+#include "mymalloc.c" //wont compile without this
 /**
 
 1. malloc() and immediately free() a 1-byte object, 120 times.
