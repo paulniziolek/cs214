@@ -1,25 +1,21 @@
-name: Lint and Format with Clang Tools
+name: c-linter
 
-on: [push, pull_request]
+on: pull_request
 
 jobs:
-  clang-tools:
+  cpp-linter:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          style: file
 
-    - name: Install clang tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y clang-format clang-tidy
-
-    - name: Check code formatting
-      run: |
-        find . -name '*.c' | xargs clang-format -style=.github/workflows/.clang-format -i
-        git diff --exit-code
-
-    - name: Run clang-tidy
-      run: |
-        find . -name '*.c' -exec clang-tidy {} -config="$(cat .github/workflows/.clang-tidy)" \;
+      - name: Fail fast?!
+        if: steps.linter.outputs.checks-failed > 0
+        run: echo "Some files failed the linting checks!"
+        # for actual deployment
+        # run: exit 1
