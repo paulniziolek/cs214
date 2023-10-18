@@ -15,6 +15,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tidy-checks: file
+          style: ''
 
       - name: Fail on bad linting
         if: steps.linter.outputs.checks-failed > 0
