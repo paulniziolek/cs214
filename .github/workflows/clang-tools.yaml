@@ -14,7 +14,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          style: file
           tidy-checks: file
 
       - name: Fail on bad linting
