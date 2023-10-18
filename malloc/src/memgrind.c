@@ -1,8 +1,8 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "mymalloc.h"
 
 /**
-
 1. malloc() and immediately free() a 1-byte object, 120 times.
 
 2. Use malloc() to get 120 1-byte objects, storing the pointers in an array, then use free() to
@@ -20,8 +20,24 @@ You may use gettimeofday() or similar functions to obtain timing information.
 
 **/
 
+//just me (nick) testing on my machine
+void test(){ 
+    void *a,*b,*c,*d;
+    a = malloc(10);
+    printMemory(), puts("--------------------------");
+    b = malloc(20);
+    printMemory(), puts("--------------------------");
+    free(b);
+    printMemory(), puts("--------------------------");
+    c = malloc(30);
+    printMemory(), puts("--------------------------");
+    free(a),free(c);
+    printMemory(), puts("--------------------------");
+    d = malloc(100);
+    printMemory(), puts("--------------------------");
+}
+
 int main(void) {
-    malloc(5);
-    
+    test();
     return 0;
 }
