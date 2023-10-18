@@ -8,5 +8,6 @@ Checks: >
   bugprone-*,
   performance-*,
   portability-*,
-  readability-*
+  readability-*,
+  -cppcoreguidelines-avoid-non-const-global-variables
 WarningsAsErrors: '*'
