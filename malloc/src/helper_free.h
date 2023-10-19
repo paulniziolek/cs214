@@ -4,6 +4,6 @@
 #include "mymalloc.h"
 
 // User-facing functions
-void myfree(void *ptr, char *file, int line);
+void myfree(void *ptr);
 
 #endif

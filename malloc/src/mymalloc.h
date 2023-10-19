@@ -4,12 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "helper_free.h"
-#include "helper_malloc.h"
 
 // User-facing macros
-#define malloc(s) mymalloc(s, __FILE__, __LINE__)
-#define free(p) myfree(p, __FILE__, __LINE__)
+#define malloc(s) mymalloc_wrapper(s, __FILE__, __LINE__)
+#define free(p) myfree_wrapper(p, __FILE__, __LINE__)
 
 // Internal macros
 // 8 bytes
@@ -29,18 +27,14 @@ void *mymalloc_wrapper(size_t size, char *file, int line);
 void myfree_wrapper(void *ptr, char *file, int line);
 
 // Memory
-static double heap[HEAP_SIZE_IN_BLOCKS]; 
+extern double heap[HEAP_SIZE_IN_BLOCKS];
 
+// Commons
 typedef struct memory_header {
     int size; 
     bool isFree;
     struct memory_header *next;
 } header_t;
-
-// Internal functions
-header_t* nextHeader(header_t *header);
-header_t* cut(header_t *header, int size);
-bool canCoalesce(header_t *header);
 
 // Debugging Functions
 void printMemory();
