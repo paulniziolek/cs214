@@ -24,7 +24,9 @@ void *mymalloc(size_t size) {
         if (canCoalesce(header)) {
             // valid block not found, but can coalesce
             header->size = aligned_header_size + (nextHeader(header)->size) + HEADER_SIZE;
+            continue;
         }
+        header = nextHeader(header);
     }
     return NULL;
 }
