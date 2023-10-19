@@ -19,7 +19,7 @@ endif()
 include_directories(src)
 
 # Create an executable for your main project (if any)
-add_executable(main src/memgrind.c src/mymalloc.c)
+add_executable(main src/memgrind.c src/mymalloc.c src/helper_free.c src/helper_malloc.c)
 
 # Create an executable for your tests
 add_executable(mymalloc_test tests/mymalloc_test.c)

@@ -1,6 +1,11 @@
+#ifndef MYMALLOC_H
+#define MYMALLOC_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "helper_free.h"
+#include "helper_malloc.h"
 
 // User-facing macros
 #define malloc(s) mymalloc(s, __FILE__, __LINE__)
@@ -20,8 +25,8 @@
 #define END (header_t *) (heap + HEAP_SIZE_IN_BLOCKS)
 
 // User-facing functions
-void *mymalloc(size_t size, char *file, int line);
-void myfree(void *ptr, char *file, int line);
+void *mymalloc_wrapper(size_t size, char *file, int line);
+void myfree_wrapper(void *ptr, char *file, int line);
 
 // Memory
 static double heap[HEAP_SIZE_IN_BLOCKS]; 
@@ -39,3 +44,5 @@ bool canCoalesce(header_t *header);
 
 // Debugging Functions
 void printMemory();
+
+#endif
