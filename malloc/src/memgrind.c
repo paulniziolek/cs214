@@ -24,17 +24,17 @@ You may use gettimeofday() or similar functions to obtain timing information.
 void test(){ 
     void *a,*b,*c,*d;
     a = malloc(10);
-    printMemory(), puts("--------------------------");
+    printMemory();
     b = malloc(20);
-    printMemory(), puts("--------------------------");
+    printMemory();
     free(b);
-    printMemory(), puts("--------------------------");
+    printMemory();
     c = malloc(30);
-    printMemory(), puts("--------------------------");
+    printMemory();
     free(a),free(c);
-    printMemory(), puts("--------------------------");
+    printMemory();
     d = malloc(100);
-    printMemory(), puts("--------------------------");
+    printMemory();
 }
 
 int main(void) {
