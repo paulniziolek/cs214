@@ -1,4 +1,3 @@
-#include "mymalloc.h"
 #include "helper_malloc.h"
 
 void *mymalloc(size_t size) {

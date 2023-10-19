@@ -5,6 +5,16 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+// Commons
+typedef struct memory_header {
+    int size; 
+    bool isFree;
+    struct memory_header *next;
+} header_t;
+
+#include "helper_malloc.h"
+#include "helper_free.h"
+
 // User-facing macros
 #define malloc(s) mymalloc_wrapper(s, __FILE__, __LINE__)
 #define free(p) myfree_wrapper(p, __FILE__, __LINE__)
@@ -28,13 +38,6 @@ void myfree_wrapper(void *ptr, char *file, int line);
 
 // Memory
 extern double heap[HEAP_SIZE_IN_BLOCKS];
-
-// Commons
-typedef struct memory_header {
-    int size; 
-    bool isFree;
-    struct memory_header *next;
-} header_t;
 
 // Debugging Functions
 void printMemory();

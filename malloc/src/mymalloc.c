@@ -1,6 +1,4 @@
 #include "mymalloc.h"
-#include "helper_malloc.h"
-#include "helper_free.h"
 
 double heap[HEAP_SIZE_IN_BLOCKS];
 
