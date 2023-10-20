@@ -10,5 +10,6 @@ void *mymalloc(size_t size);
 header_t* nextHeader(header_t *header);
 header_t* cut(header_t *header, int size);
 bool canCoalesce(header_t *header);
+void initializeMemory();
 
 #endif

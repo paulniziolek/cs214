@@ -6,8 +6,7 @@ void *mymalloc(size_t size) {
 
     // First header not found, making new one
     if (heap[0] == 0) {
-        header->size = HEAP_SIZE - HEADER_SIZE;
-        header->isFree = true;
+        initializeMemory();
     }
 
     while (header != END) {
@@ -59,4 +58,10 @@ header_t* cut(header_t *header, int size) {
 // Determines whether the current header and the next header can coalesce.
 bool canCoalesce(header_t *header) {
     return (nextHeader(header) != END && nextHeader(header)->isFree);
+}
+
+void initializeMemory() {
+    header_t *header = (header_t *) &heap[0];
+    header->size = HEAP_SIZE - HEADER_SIZE;
+    header->isFree = true;
 }
