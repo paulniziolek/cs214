@@ -13,7 +13,7 @@ You may use gettimeofday() or similar functions to obtain timing information.
 **/
 
 // func prototypes
-void testNick();
+void testDebug();
 void runTests();
 void test1();
 void test2();
@@ -38,8 +38,7 @@ void runTests() {
     test5();
 }
 
-// just me (nick) testing on my machine
-void testNick(){ 
+void testDebug(){ 
     void *a,*b,*c,*d,*e,*f;
     a = malloc(10);
     printMemory();
