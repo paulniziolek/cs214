@@ -9,7 +9,6 @@
 typedef struct memory_header {
     int size; 
     bool isFree;
-    struct memory_header *next;
 } header_t;
 
 #include "helper_malloc.h"
