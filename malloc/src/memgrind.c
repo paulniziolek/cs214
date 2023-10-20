@@ -127,14 +127,17 @@ void test3() {
             } else {
                 loc--;
                 //printf("free loc=%d\n", loc);
-                free(ptrArray[loc]);
-                allocated[loc] = 0;
+                if (allocated[loc] == 1) {
+                    free(ptrArray[loc]);
+                    allocated[loc] = 0;
+                }
             }
         }
         //printf("Process is done.\n");
         for(int i = 0; i < 120; i++) {
             if(allocated[i] == 1) {
                 free(ptrArray[i]);
+                allocated[i] = 0;
             }
         }
         gettimeofday(&end, NULL);
