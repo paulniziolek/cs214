@@ -3,16 +3,18 @@
 double heap[HEAP_SIZE_IN_BLOCKS];
 
 void *mymalloc_wrapper(size_t size, char *file, int line) {
-    //checking is size makes sense
+    // Error: Malloc size less than or equal to 0. Result in stderr and return NULL
     if(size <= 0){
         fprintf(stderr,"malloc error: size <= 0\n file: %s\n line: %d\n",file,line);
         return NULL;
     }
-    if(size > HEAP_SIZE){
+    // Error: Malloc size greater than specified HEAP_SIZE - HEADER_SIZE. Result in stderr and return NULL
+    if(size > HEAP_SIZE - HEADER_SIZE){
         fprintf(stderr,"malloc error: size > HEAP_SIZE_IN_BYTES\n file: %s\n line: %d\n",file,line);
         return NULL;
     }
     void *ptr = mymalloc(size);
+    // Error: Malloc not properly allocated. Result in stderr and return NULL
     if(ptr == NULL){
         fprintf(stderr,"malloc error: no space found\n file: %s\n line: %d\n",file,line);
         return NULL;
@@ -21,37 +23,36 @@ void *mymalloc_wrapper(size_t size, char *file, int line) {
 }
 
 void myfree_wrapper(void *ptr, char *file, int line) {
-    //check if ptr is in range
+    // Error: Pointer specified is not in heap range (external pointer). Result in stderr
     if((char*)ptr < (char*)&heap[0] || (char*)ptr >= (char*)END){
         fprintf(stderr,"free error: ptr not in range\n file: %s\n line: %d\n",file,line);
         return;        
     }
-    //heap not initialized edge case
+    // Error: Free used before any malloc & heap initialization. Result in stderr
     if(heap[0]==0){
         fprintf(stderr,"free error: heap not initialized yet\n file: %s\n line: %d\n",file,line);
         return;        
     }
 
-    //loop over current blocks
+    // loop over current blocks
     header_t *header = (header_t*)&heap[0];
     header_t *need = (header_t*)ptr - HEADER_SIZE_IN_BLOCKS;
     while(header != END){
         if(header==need){
-            //already freed this block
+            // Error: Attempting to free block that has already been freed. Result in stderr
             if(header->isFree){
                 fprintf(stderr,"free error: ptr already freed\n file: %s\n line: %d\n",file,line);
                 return;
             }
-            //block is valid, go ahead and free it
+            // block is valid, go ahead and free it
             myfree(ptr);
             return;
         }
         header=nextHeader(header);
     }
 
-    //ptr not found
-    //either it was very old and block structure had changed
-    //or it was never returned by malloc in the first place
+    // Error: Specified pointer not found in available heap memory range. Either pointer was very old
+    // and memory structure has changed, or it was never returned by any malloc. Result in stderr
     fprintf(stderr,"free error: ptr not found\n file: %s\n line: %d\n",file,line);
 }
 
