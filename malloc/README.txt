@@ -152,5 +152,38 @@ The perfomance hit in perfomance is not such a big deal since the memory array i
 
 
 Correctness Testing:
+After running ./build.sh, you can run the stress test by running ./build/test 
+Our correctness test will test various errors that our code produces, as well as 
+correctness of the allocation of various valued objects.
 
+A quick walkthrough of how we correctness test:
+- Parts 0 & 3 will test each and every single error, and is expected to return the following errors (listed below).
+- Part 1 will perform a correctness test on the read and write using our malloc. We read and write 20 100-byte object, 
+each having values stored in the object's memory, valued 1-20 respectively. We then verify that each object has the expected
+memory by calling assertions over each object, asserting the memory of object i equals to int i. In the end, we free all the objects.
+- Part 2 will perform a coalesce correctness test, by first calling malloc() on 2 100-byte objects, then storing the memory address 
+of the first object. If we free both of these objects, and malloc() a larger 500-byte object, we should guarantee a coalesce on the original
+2 (now free) objects and compare and assert the memory addresses of the very first object and the very last (largest) object. 
+This verifies our coalesce strategy
+
+From parts 0 and 3, we intentionally will reach error states from our use of malloc() or free(). We document each of the expected errors in test.c and below:
+// EXPECTED ERRORS:
+// free error: ptr not in range
+//  line: 33
+// malloc error: size <= 0
+//  line: 77
+// malloc error: size > HEAP_SIZE_IN_BYTES
+//  line: 78
+// malloc error: size > HEAP_SIZE_IN_BYTES
+//  line: 83
+// malloc error: no space found
+//  line: 91
+// free error: ptr already freed
+//  line: 96
+// free error: ptr not in range
+//  line: 100
+// free error: ptr not found
+//  line: 103
+
+These are the expected errors the program should run into, as described by the error conditions of malloc() and free() earlier in this README file. 
 
