@@ -1,13 +1,5 @@
-1. descriptions of our custom stress tests
-2. describe error reporting and design in read me (also we could change the format of error msgs)
-3.  README file containing the name and netID of both partners, 
-    your test plan, descriptions of your test programs 
-    (including any arguments they may take), and any 
-    design notes you think are worth pointing out. This should be a plain text file.
-
-
-Nick Belov, Paul Niziolek
-ndb68, pcn32
+Authors: Nick Belov, Paul Niziolek
+netids: ndb68, pcn32
 
 1. General Design
 
@@ -15,9 +7,14 @@ As required the actualy memory is stored in an array of doubles length 512. All
 auxilary information used for managing the memory is stored in structs called header_t. 
 
 The header_t struct (defined in src/mymalloc.h) contains the following information:
-1. unsigned integer size of the block
+1. integer user allocated size of the block
 2. boolean is_free
 its size as tested on our machines is 8 bytes.
+
+Note that we store the user allocated size of the block in the header instead of the
+alligned block size. This was done for future portability, in case we ever wanted to 
+return the size of the block to the user. When we need the alligned block size we just 
+do a simple calculation.
 
 Headers are stored in memory directly before the block they are managing. Since after
 each block there is either a header or the end of the array, we can use the size of the
@@ -60,6 +57,45 @@ c. Notes on our modularity
     
 Stress Tests:
 
+After running ./build.sh, you can run the stress test by running ./build/main 
+We have 5 stress tests, the 3 required and 2 of our own. All tests are run 50 times
+and then report the average time in microseconds.
+
+-test1 (given): 
+    Simply malloc and free a 1 byte object 120 times.
+
+-test2 (given): 
+    Malloc 120 1byte objects, store them in an array, then free them.
+
+-test3 (given): 
+    Create an array of 120 pointers. Repeatedly make a random choice between allocating 
+    a 1-byte object and adding the pointer to the array and deallocating a previously 
+    allocated object (if any), until you have allocated 120 times. Deallocate any 
+    remaining objects.
+
+test4 (ours):
+    We allocate blocks of random sizes, between 1 and 64 bytes, 50 times. Then we
+    randomly free some of these blocks. Then attempt to allocate a large block of memory 
+    of 500 bytes (this might not fit). Then we clear all memory.
+
+notes on test4:
+    We were interested in seeing how fragmentation and coalescing would affect our 
+    perfomance. This test actually was abnormally fast. We credit this to the fact that
+    both malloc and the error checking on free are O(blocks) so if we make large blocks
+    the program actually speeds up!
+
+test5 (ours):
+    We will allocate 1-byte chunks until memory is filled (when malloc() returns NULL), then 
+    free() each chunk in reverse order, then malloc() for the majority of the memory, forcing 
+    coalescing of chunks.
+
+notes on test5:
+    Here we decided to give the program the worst possible case that might actually come 
+    up in a real program. Maximizing blocks is important since everything takes O(blocks).
+    It's also we free the blocks in reverse order since the error checking on free 
+    traverses all the way up to the block being freed. As predicted this test was an order
+    of magnitude slower than the others.
+
 Error Reporting:
 
 Any errors found are printed to stderr. We decided NOT to terminate the program
@@ -77,7 +113,7 @@ of error to stderr then returns NULL.
 
 mymalloc_wrapper reports 3 different types of errors:
 
-    1. If the user tries to malloc 0 bytes. We thought 99% of time this would be a mistake.
+    1. If the user tries to malloc <= 0 bytes. We thought 99% of time this would be a mistake.
 
     2. If the user tries to malloc more than the maximum size of a block. The raw malloc 
     function would just return null in this case, but we thought it would be helpful to
