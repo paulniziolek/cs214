@@ -1,6 +1,8 @@
 Authors: Nick Belov, Paul Niziolek
 netids: ndb68, pcn32
 
+https://github.com/paulniziolek/cs214
+
 1. General Design
 
 As required the actualy memory is stored in an array of doubles length 512. All
