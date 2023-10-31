@@ -20,7 +20,7 @@ project(malloc)
 include_directories(src)
 
 # Create an executable for your main project (if any)
-#add_executable(main ...)
+add_executable(main src/word.c)
 
 
 # Create an executable for your tests
