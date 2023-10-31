@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 int map[SIZE];
-ll M =   29996224275833; //10,000,000,000th prime number
+ll M =   29996224275833; //rly big prime
 
 ll hash(char *str){
     ll hash = 0, p = 69420, mult = p;
