@@ -1,6 +1,6 @@
 # All commented code in this CMake file is reserved for unit testing.
 cmake_minimum_required(VERSION 3.10)
-project(malloc)
+project(posix)
 # enable_testing()
 
 # Find cmocka headers and libraries
@@ -20,7 +20,8 @@ project(malloc)
 include_directories(src)
 
 # Create an executable for your main project (if any)
-add_executable(main src/word.c src/nickmap.c)
+add_compile_options(-pg)
+add_executable(main src/word.c src/hashmap.c)
 
 
 # Create an executable for your tests
