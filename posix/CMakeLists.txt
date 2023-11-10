@@ -21,7 +21,8 @@ include_directories(src)
 
 # Create an executable for your main project (if any)
 add_compile_options(-pg)
-add_executable(main src/word.c src/hashmap.c)
+add_executable(posix src/word.c src/hashmap.c)
+add_executable(hashmap src/hashmap.c src/hashmap_test.c)
 
 
 # Create an executable for your tests
