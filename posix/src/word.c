@@ -1,46 +1,54 @@
 #include <stdio.h>
-#include <assert.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "hashmap.h"
 
-long long global_ctr = 1;
-HashMap* map;
+// PROTO
+void processArgument(HashMap* map, const char* arg);
+void processFile(HashMap* map, const char* arg);
+void processDir(HashMap* map, const char* arg);
 
-void generate_strings(char *str, int index, int length) {
-    if (index == length) {
-        str[index] = '\0'; 
-
-        assert(mapGet(map, str) == 0);
-        mapSet(map, str, global_ctr);
-        global_ctr++;
-        return;
+int main(int argc, char *argv[]){
+    if (argc < 2) {
+        fprintf(stderr, "Usage for files: build/posix [file/directory]");
+        exit(EXIT_FAILURE);
     }
 
-    for (char c = 'a'; c <= 'z'; c++) {
-        str[index] = c;
-        generate_strings(str, index + 1, length);
+    HashMap* wordCount = initMap();
+
+    for (int i = 1; i < argc; i++) {
+        processArgument(wordCount, argv[i]);
     }
+
+    // TODO: Sort word counts & return
+
 }
 
-int main(){
-    map = initMap();
-    char *s1 = "nick", *s2 = "paul", *s3 = "nick";
-    char *s4 = "khhghks";
-    mapInc(map, s1);
-    mapSet(map, s2,1000);
-    mapInc(map, s3);
-    mapSet(map, s4, 42);
+void processArgument(HashMap* map, const char* arg) {
+    struct stat entity;
     
-    printf("%d\n",mapGet(map, s1));
-    printf("%d\n",mapGet(map, s2));
-    printf("%d\n",mapGet(map, s3));
-    printf("%d\n",mapGet(map, s4));
+    if (stat(arg, &entity) != 0) {
+        fprintf(stderr, "stat() error: %s", arg);
+        exit(EXIT_FAILURE);
+    }
 
-    int length = 5;
-    char str[length + 1];  // +1 for the null terminator
-    generate_strings(str, 0, length);
-    printf("%s\n", str);
-    printf("%lld\n", global_ctr);
+    if (S_ISREG(entity.st_mode)) {
+        // arg is file
+        processFile(map, arg);
+        return;
+    }
+    if (S_ISDIR(entity.st_mode)) {
+        // arg is dir
+        processDir(map, arg);
+        return;
+    }
+    fprintf(stderr, "Argument %s is not a file or directory", arg);
+}
 
-    mapDestroy(map);
-    return 0;
+void processFile(HashMap* map, const char* arg) {
+    
+}
+
+void processDir(HashMap* map, const char* arg) {
+
 }
