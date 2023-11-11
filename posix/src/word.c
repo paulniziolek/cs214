@@ -28,8 +28,16 @@ int main(int argc, char *argv[]){
         processEntity(wordCount, argv[i]);
     }
 
-    // TODO: Sort word counts & return
+    mapSet(wordCount, "not good", 1);
+    mapSet(wordCount,"paul",2);
+    mapSet(wordCount,"asdasd",5);
 
+    key_value *kv = mapKeyValuePairs(wordCount);
+    for (int i = 0; i < wordCount->size; i++) {
+        printf("%s: %d\n", kv[i].key, kv[i].value);
+    }
+
+    mapDestroy(wordCount);
 }
 
 void processEntity(HashMap* map, const char* arg) {
