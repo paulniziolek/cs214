@@ -91,10 +91,10 @@ void processDir(HashMap* map, const char* arg) {
     closedir(dir);
 }
 
-char* append(char c, char *word, size_t wordSize, size_t wordIndex) {
-    if (wordIndex == wordSize) {
-        wordSize *= 2;
-        word = (char *)realloc(word, wordSize);
+char* append(char c, char *word, size_t *wordSize, size_t wordIndex) {
+    if (wordIndex == *wordSize) {
+        (*wordSize) *= 2;
+        word = (char *)realloc(word, *wordSize);
         if (!word) {
             writeErr("Memory reallocation for word failed");
             exit(EXIT_FAILURE);
@@ -126,15 +126,15 @@ void processFile(HashMap* map, const char* arg) {
         for(int i = 0;i<bytesRead;i++){
             c = buffer[i];
             if(isalpha(c) || c=='\''){
-                word = append(c, word, wordSize, wordIndex);
+                word = append(c, word, &wordSize, wordIndex);
                 wordIndex++;
             }else if(wordIndex && c == '-' && word[wordIndex-1] != '-'){
-                word = append(c, word, wordSize, wordIndex);
+                word = append(c, word, &wordSize, wordIndex);
                 wordIndex++;
             }else{
                 if(wordIndex!=0){ //add cur word
                     if(word[wordIndex-1] == '-') wordIndex--; //remove last '-'
-                    word = append('\0', word, wordSize, wordIndex);
+                    word = append('\0', word, &wordSize, wordIndex);
                     mapInc(map, word);
                     wordIndex = 0;
                 }
@@ -144,7 +144,7 @@ void processFile(HashMap* map, const char* arg) {
     //add last word
     if(wordIndex!=0){
         if(word[wordIndex-1] == '-') wordIndex--; //remove last '-'
-        word = append('\0', word, wordSize, wordIndex);
+        word = append('\0', word, &wordSize, wordIndex);
         mapInc(map, word);
     }
 
