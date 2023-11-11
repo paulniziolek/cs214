@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
         processEntity(wordCount, argv[i]);
     }
 
-    mapSet(wordCount, "not good", 1);
+    mapSet(wordCount, "not-good", 1);
     mapSet(wordCount,"paul",2);
     mapSet(wordCount,"asdasd",5);
 
@@ -87,62 +87,64 @@ void processDir(HashMap* map, const char* arg) {
     closedir(dir);
 }
 
+char* append(char c, char *word, size_t wordSize, size_t wordIndex) {
+    if (wordIndex == wordSize) {
+        wordSize *= 2;
+        word = (char *)realloc(word, wordSize);
+        if (!word) {
+            writeErr("Memory reallocation for word failed");
+            exit(EXIT_FAILURE);
+        }
+    }
+    word[wordIndex] = c;
+    return word;
+}
+
 void processFile(HashMap* map, const char* arg) {
     int fd = open(arg, O_RDONLY);
     if (fd == -1) {
         writeErr("File %s failed to open", arg);
         return;
     }
-    // debugging only
-    //printf("Reached processFile() for file %s\n", arg);
 
     size_t wordSize = INIT_WORD_SIZE;
-    size_t wordIndex = 0;
-    ssize_t bytesRead = 0;
+    size_t bytesRead = 0;
     char buffer[BUFFER_SIZE];
+    size_t wordIndex = 0;
+    char c; // current character
     char* word = (char *)malloc(INIT_WORD_SIZE);
     if (!word) {
         writeErr("Memory allocation for word failed");
         exit(EXIT_FAILURE);
     }
 
-    // 1. Keep reading file while bytesRead > 0;
-    // 2. While word is not followed by any separator, we exponentially increase word size with realloc() and read characters in
-    // 3. If word reaches a separator condition, we clean word (if needed, in cases such as double hyphen) and then add to hashmap
-    // 4. Once loop from (1) is finished, we add in the word (if remaining) to hashmap since no separator follows it.
-
-    while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
-        for (ssize_t i = 0; i < bytesRead; i++) {
-            // TODO: add accessory logic with specific separators such as --, ', numbers, '', -, etc.
-            if (isalnum(buffer[i]) || buffer[i] == '-') {
-                if (wordIndex >= wordSize - 1) {
-                    // reallocate word
-                    wordSize *= 2;
-                    char *temp = (char *)realloc(word, wordSize);
-                    if (!temp) {
-                        writeErr("Memory reallocation for word failed");
-                        exit(EXIT_FAILURE);
-                    }
-                    word = temp;
+    while((bytesRead = read(fd,buffer,BUFFER_SIZE))){
+        for(int i = 0;i<bytesRead;i++){
+            c = buffer[i];
+            if(isalpha(c) || c=='\''){
+                word = append(c, word, wordSize, wordIndex);
+                wordIndex++;
+            }else if(wordIndex && c == '-' && word[wordIndex-1] != '-'){
+                word = append(c, word, wordSize, wordIndex);
+                wordIndex++;
+            }else{
+                if(wordIndex!=0){ //add cur word
+                    if(word[wordIndex-1] == '-') wordIndex--; //remove last '-'
+                    word = append('\0', word, wordSize, wordIndex);
+                    mapInc(map, word);
+                    wordIndex = 0;
                 }
-                word[wordIndex] = buffer[i];
-                wordIndex += 1;
-                continue;
-            }
-            if  (wordIndex > 0) {
-                word[wordIndex] = '\0';
-                mapInc(map, word);
-                wordIndex = 0;
             }
         }
     }
-
-    if (wordIndex > 0) {
-        word[wordIndex] = '\0';
+    //add last word
+    if(wordIndex!=0){
+        if(word[wordIndex-1] == '-') wordIndex--; //remove last '-'
+        word = append('\0', word, wordSize, wordIndex);
         mapInc(map, word);
     }
-    free(word);
 
+    free(word);
     if (close(fd) == -1) {
         writeErr("File %s was interrupted during close()", arg);
     }

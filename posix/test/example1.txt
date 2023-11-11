@@ -1,2 +1,5 @@
 hello paul
-
+foo-bar
+foo--bar
+poop-
+poo-oop
