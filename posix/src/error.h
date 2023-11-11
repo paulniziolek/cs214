@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #define STDERR_FD 2
-#define ERR_MSG_SIZE 512
+#define ERR_MSG_SIZE 1024
 
 // Will write a formatted error message
 void writeErr(const char *format, ...);
