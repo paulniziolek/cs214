@@ -33,10 +33,14 @@ int main(int argc, char *argv[]){
     mapSet(wordCount,"asdasd",5);
 
     key_value *kv = mapKeyValuePairs(wordCount);
+    qsort(kv, wordCount->size, sizeof(key_value), key_value_cmp);
+
+    //TODO, turn printf into write()
     for (int i = 0; i < wordCount->size; i++) {
-        printf("%s: %d\n", kv[i].key, kv[i].value);
+        printf("%s: %lld\n", kv[i].key, kv[i].value);
     }
 
+    free(kv);
     mapDestroy(wordCount);
 }
 

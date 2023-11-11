@@ -40,6 +40,8 @@ int mapGet(HashMap *map, const char *str);
 //caller of this function must remember to FREE the returned array
 key_value* mapKeyValuePairs(HashMap *map);
 
+int key_value_cmp(const void *a, const void *b);
+
 // Attempts to set the value for a specified str.
 void mapSet(HashMap *map, const char *str, int x);
 

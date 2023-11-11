@@ -97,3 +97,12 @@ key_value *mapKeyValuePairs(HashMap *map){
     }
     return pairs;
 }
+
+int key_value_cmp(const void *a, const void *b) {
+    key_value *x = (key_value *)a;
+    key_value *y = (key_value *)b;
+    if(x->value != y->value)
+        return y->value - x->value;
+    else
+        return strcmp(x->key, y->key);
+}
