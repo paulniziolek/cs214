@@ -101,7 +101,7 @@ void processFile(HashMap* map, const char* arg) {
 
     while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
         for (ssize_t i = 0; i < bytesRead; i++) {
-            // check if - ' and other separators are included in isalnum()
+            // TODO: add accessory logic with specific separators such as --, ', numbers, '', -, etc.
             if (isalnum(buffer[i]) || buffer[i] == '-') {
                 if (wordIndex >= wordSize - 1) {
                     // reallocate word
