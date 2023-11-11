@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "hashmap.h"
+#include "error.h"
 
 #define BUFFER_SIZE 1024
 #define INIT_WORD_SIZE 256
@@ -17,7 +18,7 @@ char* constructNewPath(const char* arg, const char* name);
 
 int main(int argc, char *argv[]){
     if (argc < 2) {
-        fprintf(stderr, "Usage for files: build/posix [file/directory]");
+        writeErr("Usage for posix: build/posix [file/directory]");
         exit(EXIT_FAILURE);
     }
 
@@ -35,7 +36,7 @@ void processEntity(HashMap* map, const char* arg) {
     struct stat entity;
     
     if (stat(arg, &entity) != 0) {
-        fprintf(stderr, "stat() error: %s", arg);
+        writeErr("stat() error: %s", arg);
         exit(EXIT_FAILURE);
     }
 
@@ -50,13 +51,13 @@ void processEntity(HashMap* map, const char* arg) {
         return;
     }
 
-    fprintf(stderr, "Argument %s is not a file or directory", arg);
+    writeErr("Argument %s is not a file or directory", arg);
 }
 
 void processDir(HashMap* map, const char* arg) {
     DIR* dir = opendir(arg);
     if (dir == NULL) {
-        fprintf(stderr, "Directory %s failed to open", arg);
+        writeErr("Directory %s failed to open", arg);
     }
     
     struct dirent* content;
@@ -77,7 +78,7 @@ void processDir(HashMap* map, const char* arg) {
 void processFile(HashMap* map, const char* arg) {
     int fd = open(arg, O_RDONLY);
     if (fd == -1) {
-        fprintf(stderr, "File %s failed to open", arg);
+        writeErr("File %s failed to open", arg);
         return;
     }
     // debugging only
@@ -89,7 +90,7 @@ void processFile(HashMap* map, const char* arg) {
     char buffer[BUFFER_SIZE];
     char* word = (char *)malloc(INIT_WORD_SIZE);
     if (!word) {
-        fprintf(stderr, "Memory allocation for word failed");
+        writeErr("Memory allocation for word failed");
         exit(EXIT_FAILURE);
     }
 
@@ -107,7 +108,8 @@ void processFile(HashMap* map, const char* arg) {
                     wordSize *= 2;
                     char *temp = (char *)realloc(word, wordSize);
                     if (!temp) {
-                        fprintf(stderr, "Memory reallocation for word failed");
+                        writeErr("Memory reallocation for word failed");
+                        exit(EXIT_FAILURE);
                     }
                     word = temp;
                 }
@@ -130,7 +132,7 @@ void processFile(HashMap* map, const char* arg) {
     free(word);
 
     if (close(fd) == -1) {
-        fprintf(stderr, "File %s was interrupted during close()", arg);
+        writeErr("File %s was interrupted during close()", arg);
     }
 }
 
@@ -139,7 +141,7 @@ char* constructNewPath(const char* arg, const char* name) {
     int newPathLen = strlen(arg) + strlen(name) + 2;
     char* newPath = (char *)malloc(newPathLen * sizeof(char));
     if (newPath == NULL) {
-        fprintf(stderr, "Memory allocation for path %s/%s failed", arg, name);
+        writeErr("Memory allocation for path %s/%s failed", arg, name);
         exit(EXIT_FAILURE);
     }
 

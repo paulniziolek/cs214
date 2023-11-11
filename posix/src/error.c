@@ -1,6 +1,6 @@
 #include "error.h"
 
-void writeError(const char *format, ...) {
+void writeErr(const char *format, ...) {
     char errorMessage[ERR_MSG_SIZE];
     va_list args;
     

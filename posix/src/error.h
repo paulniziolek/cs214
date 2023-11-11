@@ -10,6 +10,6 @@
 #define ERR_MSG_SIZE 512
 
 // Will write a formatted error message
-void writeError(const char *format, ...);
+void writeErr(const char *format, ...);
 
 #endif
