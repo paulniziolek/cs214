@@ -28,16 +28,20 @@ int main(int argc, char *argv[]){
         processEntity(wordCount, argv[i]);
     }
 
-    mapSet(wordCount, "not-good", 1);
-    mapSet(wordCount,"paul",2);
-    mapSet(wordCount,"asdasd",5);
-
     key_value *kv = mapKeyValuePairs(wordCount);
     qsort(kv, wordCount->size, sizeof(key_value), key_value_cmp);
 
-    //TODO, turn printf into write()
     for (int i = 0; i < wordCount->size; i++) {
-        printf("%s: %lld\n", kv[i].key, kv[i].value);
+        char *buff = (char*)malloc(strlen(kv[i].key) + 256);
+        if (!buff) {
+            writeErr("Memory allocation for buffer failed");
+            exit(EXIT_FAILURE);
+        }
+
+        sprintf(buff, "%s %lld\n", kv[i].key, kv[i].value);
+        write(STDOUT_FILENO, buff, strlen(buff));
+
+        free(buff);
     }
 
     free(kv);
