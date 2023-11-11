@@ -3,6 +3,14 @@ netids: ndb68, pcn32
 
 How to Build and Run:
 
+Using make:
+posix can be built via running `make` which creates two executables:
+`./posix [file/directory]` will count all words within any specified files and directories. 
+You should assume that if you provide the same file twice, it will double count the words. 
+`./hashmap` will perform testing on our hashmap implementation. See testing methodology for more details.
+
+Using CMake:
+
 posix can be built via running `./build.sh` which creates two executables:
 `build/posix [file/directory]` will count all words within any specified files and directories. 
 You should assume that if you provide the same file twice, it will double count the words. 

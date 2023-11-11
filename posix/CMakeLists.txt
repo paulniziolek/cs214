@@ -19,7 +19,6 @@ project(posix)
 # Include the src directory
 
 # Create an executable for your main project (if any)
-add_compile_options(-pg)
 add_executable(posix word.c hashmap.c error.c)
 add_executable(hashmap hashmap.c hashmap_test.c)
 
