@@ -17,12 +17,11 @@ project(posix)
 # endif()
 # 
 # Include the src directory
-include_directories(src)
 
 # Create an executable for your main project (if any)
 add_compile_options(-pg)
-add_executable(posix src/word.c src/hashmap.c src/error.c)
-add_executable(hashmap src/hashmap.c src/hashmap_test.c)
+add_executable(posix word.c hashmap.c error.c)
+add_executable(hashmap hashmap.c hashmap_test.c)
 
 
 # Create an executable for your tests
