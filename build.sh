@@ -21,3 +21,9 @@ cmake ..
 make
 cd ../..
 
+# Build mysh with CMake and Make
+mkdir -p mysh/build
+cd mysh/build
+cmake ..
+make
+cd ../..
