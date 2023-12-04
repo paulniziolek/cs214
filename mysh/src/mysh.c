@@ -248,6 +248,5 @@ int main(int argc, char *argv[]) {
         if(cmd == NULL) panic("invalid cmd\n");
         runcmd(cmd);
     }
-    
     return 0;    
 }
