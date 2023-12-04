@@ -176,6 +176,6 @@ int main(int argc, char *argv[]) {
         if(cmd == NULL) panic("invalid cmd is null\n");
         print_cmd_type(cmd->type);
     }
-    
+    A
     return 0;    
 }
