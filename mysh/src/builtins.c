@@ -100,7 +100,6 @@ int execwhich(int fd, const char* arg) {
     }
     write(fd, got, strlen(got));
     write(fd, "\n", 1);
-    free(got);
     return 0;
 }
 
