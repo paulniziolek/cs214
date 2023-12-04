@@ -143,6 +143,7 @@ int readcmd(char *buff, size_t size) {
         i++;
     }
     buff[i] = '\0';
+    return i;
 }
 
 //expect buff to be null terminated
