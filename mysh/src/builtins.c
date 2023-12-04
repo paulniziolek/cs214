@@ -8,6 +8,8 @@ void pwd(int fd) {
         perror("getcwd() error");
         return;
     }
-    dprintf(fd, "%s\n", cwd);
+    write(fd, cwd, strlen(cwd));
+    write(fd, "\n", 1);
+
     free(cwd);
 }
