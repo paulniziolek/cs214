@@ -71,7 +71,46 @@ struct redircmd *build_rcmd(struct cmd *cmd, char *file, int mode){
 }
 //DESTRUCTOR
 void free_cmd(struct cmd *cmd){
-    //todo
+    if(cmd == NULL) return;
+    struct conditioncmd *ccmd = NULL;
+    struct execcmd *ecmd = NULL;
+    struct redircmd *rcmd = NULL;
+    struct pipecmd *pcmd = NULL;
+    struct builtincmd *bcmd = NULL;
+
+    switch(cmd->type){
+        case conditioncmd:
+            ccmd = (struct conditioncmd *) cmd;
+            free_cmd(ccmd->cmd);
+            free(ccmd);
+            break;
+        case execcmd:
+            ecmd = (struct execcmd *) cmd;
+            for(int i = 0; i < MAXARGS && ecmd->argv[i]!=NULL; i++) free(ecmd->argv[i]);
+            for(int i = 0; i < MAXARGS && ecmd->eargv[i]!=NULL; i++) free(ecmd->eargv[i]);
+            free(ecmd);
+            break;
+        case redircmd:
+            rcmd = (struct redircmd *) cmd;
+            free_cmd(rcmd->cmd);
+            free(rcmd->file);
+            free(rcmd);
+            break;
+        case pipecmd:
+            pcmd = (struct pipecmd *) cmd;
+            free_cmd(pcmd->left);
+            free_cmd(pcmd->right);
+            free(pcmd);
+            break;
+        case builtincmd:
+            bcmd = (struct builtincmd *) cmd;
+            for(int i = 0; i < MAXARGS && bcmd->argv[i]!=NULL; i++) free(bcmd->argv[i]);
+            for(int i = 0; i < MAXARGS && bcmd->eargv[i]!=NULL; i++) free(bcmd->eargv[i]);
+            free(bcmd);
+            break;
+        default:
+            panic("unknown\n");
+    }
 }
 
 
@@ -217,7 +256,7 @@ struct cmd *parsecmd(char *buff, bool first){
     char *tok = strtok(buff, " \n");
     if(tok == NULL) {
         invalid_cmd = 1;
-        return NULL; //something went wrong
+        return cmd; //something went wrong
     }
     //TODO: print goodbye message when in console mode
     if(first && !strcmp(tok,"exit")) {
@@ -331,6 +370,7 @@ int main(int argc, char *argv[]) {
             debug("invalid command\n");
         }
         else runcmd(cmd);
+        free_cmd(cmd);
     }
     return 0;    
 }
