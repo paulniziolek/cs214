@@ -22,8 +22,8 @@ struct cmd {
 };
 struct execcmd {
     int type; 
-    char *argv[MAXARGS];
-    char *eargv[MAXARGS]; //may change this to a linked list later
+    char *argv[MAXARGS+1];
+    char *eargv[MAXARGS+1]; //may change this to a linked list later
 };
 
 enum REDIRTYPE {
@@ -52,8 +52,8 @@ enum BUILTIN {
 struct builtincmd {
     int type;
     int mode;
-    char *argv[MAXARGS];
-    char *eargv[MAXARGS]; //may change this to a linked list later
+    char *argv[MAXARGS+1];
+    char *eargv[MAXARGS+1]; //may change this to a linked list later
 };
 
 enum CONDITIONMODE {

@@ -55,6 +55,7 @@ struct pipecmd *build_pcmd(struct cmd *left, struct cmd *right){
 }
 struct builtincmd *build_bcmd(int mode){
     struct builtincmd *bcmd = malloc(sizeof(struct builtincmd));
+    bcmd->argv[0] = malloc(strlen("builtincmd"));
     bcmd->type = builtincmd;
     bcmd->mode = mode;
     return bcmd;
@@ -84,10 +85,10 @@ void free_cmd(struct cmd *cmd){
             free_cmd(ccmd->cmd);
             free(ccmd);
             break;
-        case execcmd:
+        case execcmd: //free eargs after implimenting wild cards
             ecmd = (struct execcmd *) cmd;
             for(int i = 0; i < MAXARGS && ecmd->argv[i]!=NULL; i++) free(ecmd->argv[i]);
-            for(int i = 0; i < MAXARGS && ecmd->eargv[i]!=NULL; i++) free(ecmd->eargv[i]);
+            //for(int i = 0; i < MAXARGS && ecmd->eargv[i]!=NULL; i++) free(ecmd->eargv[i]);
             free(ecmd);
             break;
         case redircmd:
@@ -102,10 +103,10 @@ void free_cmd(struct cmd *cmd){
             free_cmd(pcmd->right);
             free(pcmd);
             break;
-        case builtincmd:
+        case builtincmd: //free eargs after implimenting wild cards
             bcmd = (struct builtincmd *) cmd;
             for(int i = 0; i < MAXARGS && bcmd->argv[i]!=NULL; i++) free(bcmd->argv[i]);
-            for(int i = 0; i < MAXARGS && bcmd->eargv[i]!=NULL; i++) free(bcmd->eargv[i]);
+            //for(int i = 0; i < MAXARGS && bcmd->eargv[i]!=NULL; i++) free(bcmd->eargv[i]);
             free(bcmd);
             break;
         default:
@@ -177,9 +178,6 @@ void runcmd(struct cmd *cmd){
                 default:
                     panic("unknown redirection mode\n");
             }
-
-            
-
             break;
         case pipecmd:
             pcmd = (struct pipecmd *) cmd;
@@ -258,7 +256,6 @@ struct cmd *parsecmd(char *buff, bool first){
         invalid_cmd = 1;
         return cmd; //something went wrong
     }
-    //TODO: print goodbye message when in console mode
     if(first && !strcmp(tok,"exit")) {
         if(!bash_mode) shell_print("goodbye :)\n");
         exit(0);
@@ -275,6 +272,7 @@ struct cmd *parsecmd(char *buff, bool first){
         cmd = (struct cmd *) bcmd;
 
         int i = 1;
+        bcmd->argv[1] = NULL;
         while((tok = strtok(NULL, " \n")) != NULL){
             if(i >= MAXARGS) panic("too many arguments");
             if(!strcmp(tok,"<") || !strcmp(tok,">")){
@@ -284,19 +282,19 @@ struct cmd *parsecmd(char *buff, bool first){
                 rcmd = build_rcmd(cmd, ntok, (!strcmp(tok,"<")) ? REDIR_IN : REDIR_OUT);
                 cmd = (struct cmd *) rcmd;
 
-                i+=2;
                 continue;
             }
             else if(!strcmp(tok,"|")){
                 pcmd = build_pcmd(cmd, parsecmd(NULL, false));
                 cmd = (struct cmd *) pcmd;
+
                 return cmd;
             }
 
             bcmd->argv[i] = malloc(strlen(tok));
             strcpy(bcmd->argv[i], tok);
-
             i++;
+            bcmd->argv[i]=NULL;
         }
     }
     else{ //exec commands
@@ -304,6 +302,7 @@ struct cmd *parsecmd(char *buff, bool first){
         cmd = (struct cmd *) ecmd;
 
         int i = 1;
+        ecmd->argv[1] = NULL;
         while((tok = strtok(NULL, " \n")) != NULL){
             if(i >= MAXARGS) panic("too many arguments");
             if(!strcmp(tok,"<") || !strcmp(tok,">")){
@@ -313,7 +312,6 @@ struct cmd *parsecmd(char *buff, bool first){
                 rcmd = build_rcmd(cmd, ntok, (!strcmp(tok,"<")) ? REDIR_IN : REDIR_OUT);
                 cmd = (struct cmd *) rcmd;
 
-                i+=2;
                 continue;
             }
             else if(!strcmp(tok,"|")){
@@ -326,6 +324,7 @@ struct cmd *parsecmd(char *buff, bool first){
             strcpy(ecmd->argv[i], tok);
 
             i++;
+            ecmd->argv[i]=NULL;
         }
     }
     return cmd;
