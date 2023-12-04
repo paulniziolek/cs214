@@ -1,11 +1,11 @@
 #include "mysh.h"
+#include "builtins.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include <fcntl.h>
-
 
 //GLOBALS
 int last_status = 0;
@@ -72,6 +72,7 @@ void free_cmd(struct cmd *cmd){
 
 //EXECUTE COMMANDS
 void runcmd(struct cmd *cmd){
+    if(cmd == NULL) panic("invalid cmd\n");
     struct conditioncmd *ccmd = NULL;
     struct execcmd *ecmd = NULL;
     struct redircmd *rcmd = NULL;
@@ -81,7 +82,12 @@ void runcmd(struct cmd *cmd){
     switch (cmd->type){
         case execcmd:
             ecmd = (struct execcmd *) cmd;
-            write(1, "execcmd\n", strlen("execcmd\n"));
+            //print arguments
+            for(int i = 0; i < MAXARGS; i++){
+                if(ecmd->argv[i] == NULL) break;
+                write(1, ecmd->argv[i], strlen(ecmd->argv[i]));
+                write(1, "\n", 1);
+            }
             break;
         case redircmd:
             rcmd = (struct redircmd *) cmd;
@@ -96,7 +102,19 @@ void runcmd(struct cmd *cmd){
             break;
         case builtincmd:
             bcmd = (struct builtincmd *) cmd;
-            write(1, "builtincmd\n", strlen("builtincmd\n"));
+            switch (bcmd->mode){
+                case cd:
+                    execcd(bcmd->argv[1]);
+                    break;
+                case which:
+                    execwhich(1, bcmd->argv[1]);
+                    break;
+                case pwd:
+                    execpwd(1);
+                    break;
+                default:
+                    panic("unknown built in command\n");
+            }
             break;
         case conditioncmd:
             ccmd = (struct conditioncmd *) cmd;

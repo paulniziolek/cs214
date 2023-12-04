@@ -2,17 +2,17 @@
 
 int main() {
     int fd = STDOUT_FILENO;
-    cd("../../.././");
-    pwd(fd);
-    cd("~/Downloads");
-    cd("path/that/doesnt/exist");
-    cd("");
-    cd(".");
-    pwd(fd);
+    execcd("../../.././");
+    execpwd(fd);
+    execcd("~/Downloads");
+    execcd("path/that/doesnt/exist");
+    execcd("");
+    execcd(".");
+    execpwd(fd);
 
-    which(fd, "which");
-    which(fd, "cd");
-    which(fd, "pwd");
+    execwhich(fd, "which");
+    execwhich(fd, "cd");
+    execwhich(fd, "pwd");
 
-    which(fd, "ls");
+    execwhich(fd, "ls");
 }

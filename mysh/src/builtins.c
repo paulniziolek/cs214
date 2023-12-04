@@ -6,7 +6,7 @@ int cdRelativePath(const char* arg);
 // TODO, change char* arg to char** arg and fail when given wrong # of args.
 // the above validation is required. 
 
-void cd(const char* arg) {
+void execcd(const char* arg) {
     int err = 0;
     
     if (arg == NULL || arg[0] == '\0') {
@@ -69,7 +69,7 @@ int cdRelativePath(const char* arg) {
     return err;
 }
 
-void pwd(int fd) {
+void execpwd(int fd) {
     char* cwd = getcwd(NULL, 0);
     if (cwd == NULL) {
         perror("getcwd() error");
@@ -81,7 +81,7 @@ void pwd(int fd) {
     free(cwd);
 }
 
-void which(int fd, const char* arg) {
+void execwhich(int fd, const char* arg) {
     if (arg == NULL || arg[0] == '\0') {
         perror("cd() fail, no argument specified");
         return;
