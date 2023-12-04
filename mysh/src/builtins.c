@@ -6,12 +6,12 @@ int cdRelativePath(const char* arg);
 // TODO, change char* arg to char** arg and fail when given wrong # of args.
 // the above validation is required. 
 
-void execcd(const char* arg) {
+int execcd(const char* arg) {
     int err = 0;
     
     if (arg == NULL || arg[0] == '\0') {
         perror("cd() fail, no argument specified");
-        return;
+        return 1;
     }
 
     switch (arg[0]) {
@@ -27,7 +27,9 @@ void execcd(const char* arg) {
 
     if (err != 0) {
         perror("cd() fail");
+        return 1;
     }
+    return 0;
 }
 
 int cdHomePath(const char* arg) {
@@ -69,22 +71,23 @@ int cdRelativePath(const char* arg) {
     return err;
 }
 
-void execpwd(int fd) {
+int execpwd(int fd) {
     char* cwd = getcwd(NULL, 0);
     if (cwd == NULL) {
         perror("getcwd() error");
-        return;
+        return 1;
     }
     write(fd, cwd, strlen(cwd));
     write(fd, "\n", 1);
 
     free(cwd);
+    return 0;
 }
 
-void execwhich(int fd, const char* arg) {
+int execwhich(int fd, const char* arg) {
     if (arg == NULL || arg[0] == '\0') {
-        perror("cd() fail, no argument specified");
-        return;
+        perror("which() fail, no argument specified");
+        return 1;
     }
 
     if (strcmp(arg, "cd") == 0 || strcmp(arg, "which") == 0 || strcmp(arg, "pwd") == 0) {
@@ -92,15 +95,16 @@ void execwhich(int fd, const char* arg) {
         write(fd, builtInMsg, strlen(builtInMsg));
         write(fd, arg, strlen(arg));
         write(fd, "\n", 1);
-        return;
+        return 0;
     }
     const char* got = _getExecPath(arg);
     if (got == NULL) {
         perror("not found");
-        return;
+        return 1;
     }
     write(fd, got, strlen(got));
     write(fd, "\n", 1);
+    return 0;
 }
 
 const char* _getExecPath(const char* arg) {

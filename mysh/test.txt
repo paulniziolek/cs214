@@ -1,3 +1,0 @@
-cd pee | poo
-then test < james > alex
-exit

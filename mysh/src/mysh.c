@@ -15,11 +15,15 @@ char input_buffer[MAXLINE];
 int input_buffer_idx = MAXLINE;
 int input_buffer_size = MAXLINE;
 int input_fd = 0;
+int invalid_cmd = 0;
 
 //HELPER FUNCTIONS
 void panic(char *msg) {
     write(1, msg, strlen(msg));
     exit(1);
+}
+void debug(char *msg) {
+    write(1, msg, strlen(msg));
 }
 
 void shell_print(char *msg) {
@@ -72,6 +76,8 @@ void free_cmd(struct cmd *cmd){
 
 
 //EXECUTE COMMANDS
+
+
 void runcmd(struct cmd *cmd){
     if(cmd == NULL) panic("invalid cmd\n");
     struct conditioncmd *ccmd = NULL;
@@ -79,39 +85,92 @@ void runcmd(struct cmd *cmd){
     struct redircmd *rcmd = NULL;
     struct pipecmd *pcmd = NULL;
     struct builtincmd *bcmd = NULL;
+    int fd, ogstdin, ogstdout; 
+    int pipefd[2];
+    pid_t pid;
+
 
     switch (cmd->type){
         case execcmd:
             ecmd = (struct execcmd *) cmd;
-            //print arguments
-            pid_t pid = fork();
-            if(pid < 0) panic("fork failed\n");
-            if(pid == 0) execv(_getExecPath(ecmd->argv[0]), ecmd->argv);
+
+            //expand wild cards
+
+            pid = fork();
+            if(pid < 0) {
+                debug("fork failed\n");
+                last_status = 1;
+                break;
+            }
+            if(pid == 0) {
+                execv(_getExecPath(ecmd->argv[0]), ecmd->argv);
+                panic("exec failed\n"); //this is fine because terminates child process with status 1
+            }
             else waitpid(pid, &last_status, 0);
             
             break;
         case redircmd:
             rcmd = (struct redircmd *) cmd;
-            write(1, "redircmd\n", strlen("redircmd\n"));
-            runcmd(rcmd->cmd);
+            //use dup2 to redirect
+            switch(rcmd->mode){
+                case REDIR_IN:
+                    fd = open(rcmd->file, O_RDONLY), ogstdin = dup(0);
+                    if(fd < 0) {
+                        debug("could not open file\n"); 
+                        last_status = 1;
+                        break;
+                    }
+                    dup2(fd, 0);
+                    runcmd(rcmd->cmd);
+                    dup2(ogstdin, 0);
+                    break;
+                case REDIR_OUT:
+                    fd = open(rcmd->file, O_WRONLY | O_CREAT | O_TRUNC, 0640), ogstdout = dup(1);
+                    if(fd < 0){
+                        debug("could not open file\n"); 
+                        last_status = 1;
+                        break;
+                    }
+                    dup2(fd, 1);
+                    runcmd(rcmd->cmd);
+                    dup2(ogstdout, 1);
+                    break;
+                default:
+                    panic("unknown redirection mode\n");
+            }
+
+            
+
             break;
         case pipecmd:
             pcmd = (struct pipecmd *) cmd;
-            write(1, "pipecmd\n", strlen("pipecmd\n"));
+            if(pipe(pipefd) == -1) {
+                debug("pipe failed\n");
+                last_status = 1;
+                break;
+            }
+            ogstdin = dup(0), ogstdout = dup(1);
+
+            dup2(pipefd[1], 1);
             runcmd(pcmd->left);
+            dup2(ogstdout, 1);
+
+            dup2(pipefd[0], 0);
             runcmd(pcmd->right);
+            dup2(ogstdin, 0);
+
             break;
         case builtincmd:
             bcmd = (struct builtincmd *) cmd;
             switch (bcmd->mode){
                 case cd:
-                    execcd(bcmd->argv[1]);
+                    last_status=execcd(bcmd->argv[1]);
                     break;
                 case which:
-                    execwhich(1, bcmd->argv[1]);
+                    last_status=execwhich(1, bcmd->argv[1]);
                     break;
                 case pwd:
-                    execpwd(1);
+                    last_status=execpwd(1);
                     break;
                 default:
                     panic("unknown built in command\n");
@@ -119,8 +178,8 @@ void runcmd(struct cmd *cmd){
             break;
         case conditioncmd:
             ccmd = (struct conditioncmd *) cmd;
-            write(1, "conditioncmd\n", strlen("conditioncmd\n"));
-            runcmd(ccmd->cmd);
+            if(ccmd->mode == _then && last_status == 0) runcmd(ccmd->cmd);
+            else if(ccmd->mode == _else && last_status != 0) runcmd(ccmd->cmd);
             break;
         default:
             panic("unknown\n");
@@ -156,8 +215,10 @@ struct cmd *parsecmd(char *buff, bool first){
     struct builtincmd *bcmd = NULL;
 
     char *tok = strtok(buff, " \n");
-    if(tok == NULL) panic("expected command\n");
-
+    if(tok == NULL) {
+        invalid_cmd = 1;
+        return NULL; //something went wrong
+    }
     //TODO: print goodbye message when in console mode
     if(first && !strcmp(tok,"exit")) {
         if(!bash_mode) shell_print("goodbye :)\n");
@@ -165,7 +226,7 @@ struct cmd *parsecmd(char *buff, bool first){
     }
     //conditions
     if(!strcmp(tok,"then") || !strcmp(tok,"else")){   
-        if(!first) panic("conditions can only be used at the beginning of a line\n");
+        if(!first) invalid_cmd = 1; //set invalid_cmd flag
         ccmd = build_ccmd((!strcmp(tok,"then")) ? _then : _else, parsecmd(NULL, false));
         cmd = (struct cmd *) ccmd;
     } //built in commands
@@ -265,8 +326,11 @@ int main(int argc, char *argv[]) {
 
     while(readcmd(buff, MAXLINE)){
         struct cmd *cmd = parsecmd(buff, true);
-        if(cmd == NULL) panic("invalid cmd\n");
-        runcmd(cmd);
+        if(cmd == NULL || invalid_cmd) {
+            invalid_cmd = 0;
+            debug("invalid command\n");
+        }
+        else runcmd(cmd);
     }
     return 0;    
 }
