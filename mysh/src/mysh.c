@@ -93,10 +93,10 @@ void free_cmd(struct cmd *cmd){
             free_cmd(ccmd->cmd);
             free(ccmd);
             break;
-        case execcmd: //free eargs after implimenting wild cards
+        case execcmd:
             ecmd = (struct execcmd *) cmd;
             for(int i = 0; i < MAXARGS && ecmd->argv[i]!=NULL; i++) free(ecmd->argv[i]);
-            //for(int i = 0; i < MAXARGS && ecmd->eargv[i]!=NULL; i++) free(ecmd->eargv[i]);
+            for(int i = 0; i < MAXARGS && ecmd->eargv[i]!=NULL; i++) free(ecmd->eargv[i]);
             free(ecmd);
             break;
         case redircmd:
@@ -111,10 +111,10 @@ void free_cmd(struct cmd *cmd){
             free_cmd(pcmd->right);
             free(pcmd);
             break;
-        case builtincmd: //free eargs after implimenting wild cards
+        case builtincmd:
             bcmd = (struct builtincmd *) cmd;
             for(int i = 0; i < MAXARGS && bcmd->argv[i]!=NULL; i++) free(bcmd->argv[i]);
-            //for(int i = 0; i < MAXARGS && bcmd->eargv[i]!=NULL; i++) free(bcmd->eargv[i]);
+            for(int i = 0; i < MAXARGS && bcmd->eargv[i]!=NULL; i++) free(bcmd->eargv[i]);
             free(bcmd);
             break;
         default:
@@ -141,9 +141,6 @@ void runcmd(struct cmd *cmd){
     switch (cmd->type){
         case execcmd:
             ecmd = (struct execcmd *) cmd;
-
-            //expand wild cards
-
             pid = fork();
             if(pid < 0) {
                 debug("fork failed\n");
@@ -151,7 +148,7 @@ void runcmd(struct cmd *cmd){
                 break;
             }
             if(pid == 0) {
-                execv(_getExecPath(ecmd->argv[0]), ecmd->argv);
+                execv(_getExecPath(ecmd->argv[0]), ecmd->eargv);
                 panic("exec failed\n"); //this is fine because terminates child process with status 1
             }
             else waitpid(pid, &last_status, 0);
@@ -159,7 +156,6 @@ void runcmd(struct cmd *cmd){
             break;
         case redircmd:
             rcmd = (struct redircmd *) cmd;
-            //use dup2 to redirect
             switch(rcmd->mode){
                 case REDIR_IN:
                     fd = open(rcmd->file, O_RDONLY), ogstdin = dup(0);
@@ -209,10 +205,10 @@ void runcmd(struct cmd *cmd){
             bcmd = (struct builtincmd *) cmd;
             switch (bcmd->mode){
                 case cd:
-                    last_status=execcd(bcmd->argv[1]);
+                    last_status=execcd(bcmd->eargv[1]);
                     break;
                 case which:
-                    last_status=execwhich(1, bcmd->argv[1]);
+                    last_status=execwhich(1, bcmd->eargv[1]);
                     break;
                 case pwd:
                     last_status=execpwd(1);
