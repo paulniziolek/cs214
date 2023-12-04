@@ -94,5 +94,36 @@ void which(int fd, const char* arg) {
         write(fd, "\n", 1);
         return;
     }
-    
+    const char* got = _getExecPath(arg);
+    if (got == NULL) {
+        perror("not found");
+        return;
+    }
+    write(fd, got, strlen(got));
+    write(fd, "\n", 1);
+}
+
+const char* _getExecPath(const char* arg) {
+    int traversalDirsLen = 3;
+    const char* traversalDirs[] = {_BINPATH1, _BINPATH2, _BINPATH3};
+
+    for (int i = 0; i < traversalDirsLen; i++) {
+        int newPathLen = strlen(traversalDirs[i]) + strlen(arg) + 2; // +2 for the '/' after binpath and \0.
+        char* newPath = (char *)malloc(newPathLen * sizeof(char));
+        if (newPath == NULL) {
+            perror("malloc() failed for new path in _getExecPath() ");
+            return NULL;
+        }
+        snprintf(newPath, newPathLen, "%s/%s", traversalDirs[i], arg);
+
+        if (access(newPath, F_OK)) {
+            // file does not exist
+            free(newPath);
+            continue;
+        } else {
+            // file exists
+            return newPath;
+        }
+    }
+    return NULL;
 }
