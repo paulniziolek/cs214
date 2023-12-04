@@ -3,6 +3,6 @@ project(malloc)
 
 include_directories(src)
 
-add_executable(mysh)
+add_executable(mysh src/mysh.c)
 
 
