@@ -1,7 +1,6 @@
 #include "builtins.h"
 
 int cdHomePath(const char* arg);
-int cdRelativePath(const char* arg);
 
 // TODO, change char* arg to char** arg and fail when given wrong # of args.
 // the above validation is required. 
@@ -15,14 +14,11 @@ int execcd(const char* arg) {
     }
 
     switch (arg[0]) {
-    case '/': 
-        err = chdir(arg);
-        break;
     case '~':
         err = cdHomePath(arg);
         break;
     default:
-        err = cdRelativePath(arg);
+        err = chdir(arg);
     }
 
     if (err != 0) {
