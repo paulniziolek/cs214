@@ -4,12 +4,27 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <fcntl.h>
 
+
+//GLOBALS
+int last_status = 0;
+int bash_mode = 0;
+char input_buffer[MAXLINE];
+int input_buffer_idx = MAXLINE;
+int input_buffer_size = MAXLINE;
+int input_fd = 0;
+
+//HELPER FUNCTIONS
 void panic(char *msg) {
-    write(2, msg, strlen(msg));
+    write(1, msg, strlen(msg));
     exit(1);
 }
 
+void shell_print(char *msg) {
+    write(1,"mysh> ", strlen("mysh> "));
+    write(1, msg, strlen(msg));
+}
 
 //CONSTRUCTORS
 struct conditioncmd *build_ccmd(int mode, struct cmd *cmd){
@@ -49,17 +64,66 @@ struct redircmd *build_rcmd(struct cmd *cmd, char *file, int mode){
     rcmd->fd = (mode == REDIR_IN) ? 0 : 1;
     return rcmd;
 }
+//DESTRUCTOR
+void free_cmd(struct cmd *cmd){
+    //todo
+}
+
 
 //EXECUTE COMMANDS
+void runcmd(struct cmd *cmd){
+    struct conditioncmd *ccmd = NULL;
+    struct execcmd *ecmd = NULL;
+    struct redircmd *rcmd = NULL;
+    struct pipecmd *pcmd = NULL;
+    struct builtincmd *bcmd = NULL;
+
+    switch (cmd->type){
+        case execcmd:
+            ecmd = (struct execcmd *) cmd;
+            write(1, "execcmd\n", strlen("execcmd\n"));
+            break;
+        case redircmd:
+            rcmd = (struct redircmd *) cmd;
+            write(1, "redircmd\n", strlen("redircmd\n"));
+            runcmd(rcmd->cmd);
+            break;
+        case pipecmd:
+            pcmd = (struct pipecmd *) cmd;
+            write(1, "pipecmd\n", strlen("pipecmd\n"));
+            runcmd(pcmd->left);
+            runcmd(pcmd->right);
+            break;
+        case builtincmd:
+            bcmd = (struct builtincmd *) cmd;
+            write(1, "builtincmd\n", strlen("builtincmd\n"));
+            break;
+        case conditioncmd:
+            ccmd = (struct conditioncmd *) cmd;
+            write(1, "conditioncmd\n", strlen("conditioncmd\n"));
+            runcmd(ccmd->cmd);
+            break;
+        default:
+            panic("unknown\n");
+    }
+}
 
 //STRING PARSING
 int readcmd(char *buff, size_t size) {
-    memset(buff, 0, size);
-    read(0, buff, size);
-    if(buff[0] == ' ' || buff[0] == '\n') {
-        return 0;
+    if(!bash_mode) shell_print("");
+    int i = 0;
+    while(i < size){
+        if(input_buffer_idx == input_buffer_size){
+            input_buffer_size = read(input_fd, input_buffer, MAXLINE);
+            input_buffer_idx = 0;
+        }
+        if(input_buffer_idx == input_buffer_size) break;
+        if(input_buffer[input_buffer_idx] == '\n') {input_buffer_idx++;break;}
+        buff[i] = input_buffer[input_buffer_idx];
+        input_buffer_idx++;
+        i++;
     }
-    return 1;
+    buff[i] = '\0';
 }
 
 //expect buff to be null terminated
@@ -75,8 +139,10 @@ struct cmd *parsecmd(char *buff, bool first){
     if(tok == NULL) panic("expected command\n");
 
     //TODO: print goodbye message when in console mode
-    if(first && !strcmp(tok,"exit")) exit(0);
-    
+    if(first && !strcmp(tok,"exit")) {
+        if(!bash_mode) shell_print("goodbye :)\n");
+        exit(0);
+    }
     //conditions
     if(!strcmp(tok,"then") || !strcmp(tok,"else")){   
         if(!first) panic("conditions can only be used at the beginning of a line\n");
@@ -169,12 +235,18 @@ void print_cmd_type(int type){
 }
 
 int main(int argc, char *argv[]) {
-    char buff[MAXLINE];
+    char buff[MAXLINE+1]; //+1 for null terminator
+    bash_mode = (argc>1);
+    
+    if(!bash_mode) input_fd = 0; //stdinput
+    else input_fd = open(argv[1], O_RDONLY);
+
+    if(input_fd < 0) panic("could not open file\n");
 
     while(readcmd(buff, MAXLINE)){
         struct cmd *cmd = parsecmd(buff, true);
-        if(cmd == NULL) panic("invalid cmd is null\n");
-        print_cmd_type(cmd->type);
+        if(cmd == NULL) panic("invalid cmd\n");
+        runcmd(cmd);
     }
     
     return 0;    
