@@ -1,7 +1,6 @@
 #include "builtins.h"
 
 int cdHomePath(const char* arg);
-int cdRelativePath(const char* arg);
 
 // TODO, change char* arg to char** arg and fail when given wrong # of args.
 // the above validation is required. 
@@ -15,14 +14,11 @@ void execcd(const char* arg) {
     }
 
     switch (arg[0]) {
-    case '/': 
-        err = chdir(arg);
-        break;
     case '~':
         err = cdHomePath(arg);
         break;
     default:
-        err = cdRelativePath(arg);
+        err = chdir(arg);
     }
 
     if (err != 0) {
@@ -46,23 +42,6 @@ int cdHomePath(const char* arg) {
         return err;
     }
     snprintf(newPath, newPathLen, "%s%s", homeDir, arg + 1);
-
-    err = chdir(newPath);
-    free(newPath);
-    return err;
-}
-
-int cdRelativePath(const char* arg) {
-    int err = 0;
-    const char* cwd = getcwd(NULL, 0);
-
-    int newPathLen = strlen(cwd) + strlen(arg) + 2; // +2 for the '/' after cwd and \0.
-    char* newPath = (char *)malloc(newPathLen * sizeof(char));
-    if (newPath == NULL) {
-        perror("malloc() failed for new path in cd() ");
-        return err;
-    }
-    snprintf(newPath, newPathLen, "%s/%s", cwd, arg);
 
     err = chdir(newPath);
     free(newPath);
