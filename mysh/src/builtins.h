@@ -12,5 +12,6 @@ void cd(const char* arg);
 
 void pwd(int fd);
 
+void which(int fd, const char* arg);
 
 #endif

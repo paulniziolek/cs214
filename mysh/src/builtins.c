@@ -3,11 +3,14 @@
 int cdHomePath(const char* arg);
 int cdRelativePath(const char* arg);
 
+// TODO, change char* arg to char** arg and fail when given wrong # of args.
+// the above validation is required. 
+
 void cd(const char* arg) {
     int err = 0;
     
     if (arg == NULL || arg[0] == '\0') {
-        perror("cd() fail, no arguments specified");
+        perror("cd() fail, no argument specified");
         return;
     }
 
@@ -76,4 +79,20 @@ void pwd(int fd) {
     write(fd, "\n", 1);
 
     free(cwd);
+}
+
+void which(int fd, const char* arg) {
+    if (arg == NULL || arg[0] == '\0') {
+        perror("cd() fail, no argument specified");
+        return;
+    }
+
+    if (strcmp(arg, "cd") == 0 || strcmp(arg, "which") == 0 || strcmp(arg, "pwd") == 0) {
+        const char* builtInMsg = "built-in command: ";
+        write(fd, builtInMsg, strlen(builtInMsg));
+        write(fd, arg, strlen(arg));
+        write(fd, "\n", 1);
+        return;
+    }
+    
 }
