@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 //GLOBALS
 int last_status = 0;
@@ -83,7 +84,11 @@ void runcmd(struct cmd *cmd){
         case execcmd:
             ecmd = (struct execcmd *) cmd;
             //print arguments
-            execv(_getExecPath(ecmd->argv[0]), ecmd->argv);
+            pid_t pid = fork();
+            if(pid < 0) panic("fork failed\n");
+            if(pid == 0) execv(_getExecPath(ecmd->argv[0]), ecmd->argv);
+            else waitpid(pid, &last_status, 0);
+            
             break;
         case redircmd:
             rcmd = (struct redircmd *) cmd;
