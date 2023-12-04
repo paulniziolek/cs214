@@ -1,5 +1,6 @@
 #include "mysh.h"
 #include "builtins.h"
+#include <glob.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +8,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 //GLOBALS
 int last_status = 0;
@@ -30,6 +32,7 @@ void shell_print(char *msg) {
     write(1,"mysh> ", strlen("mysh> "));
     write(1, msg, strlen(msg));
 }
+void expandArgs(char* argv[], char* eargv[]);
 
 //CONSTRUCTORS
 struct conditioncmd *build_ccmd(int mode, struct cmd *cmd){
@@ -44,6 +47,10 @@ struct execcmd *build_ecmd(char *name){
     ecmd->type = execcmd;
     ecmd->argv[0] = malloc(strlen(name));
     strcpy(ecmd->argv[0], name);
+
+    ecmd->eargv[0] = malloc(strlen(name));
+    strcpy(ecmd->eargv[0], name);
+    
     return ecmd;
 }
 struct pipecmd *build_pcmd(struct cmd *left, struct cmd *right){
@@ -55,7 +62,8 @@ struct pipecmd *build_pcmd(struct cmd *left, struct cmd *right){
 }
 struct builtincmd *build_bcmd(int mode){
     struct builtincmd *bcmd = malloc(sizeof(struct builtincmd));
-    bcmd->argv[0] = malloc(strlen("builtincmd"));
+    bcmd->argv[0] = (char *)malloc(strlen("builtincmd"));
+    bcmd->eargv[0] = (char *)malloc(strlen("builtincmd"));
     bcmd->type = builtincmd;
     bcmd->mode = mode;
     return bcmd;
@@ -291,11 +299,12 @@ struct cmd *parsecmd(char *buff, bool first){
                 return cmd;
             }
 
-            bcmd->argv[i] = malloc(strlen(tok));
+            bcmd->argv[i] = (char *)malloc(strlen(tok));
             strcpy(bcmd->argv[i], tok);
             i++;
             bcmd->argv[i]=NULL;
         }
+        expandArgs(bcmd->argv, bcmd->eargv);
     }
     else{ //exec commands
         ecmd = build_ecmd(tok);
@@ -320,14 +329,51 @@ struct cmd *parsecmd(char *buff, bool first){
                 return cmd;
             }
 
-            ecmd->argv[i] = malloc(strlen(tok));
+            ecmd->argv[i] = (char *)malloc(strlen(tok));
             strcpy(ecmd->argv[i], tok);
 
             i++;
             ecmd->argv[i]=NULL;
         }
+        expandArgs(ecmd->argv, ecmd->eargv);
     }
     return cmd;
+}
+
+void expandArgs(char* argv[], char* eargv[]) {
+    int numEargs = 1;
+    for (int i = 1; i < MAXARGS; i++) {
+        if (argv[i] == NULL) break;
+        if (strstr(argv[i], "*") == NULL) {
+            // not a wildcard
+            eargv[numEargs] = argv[i];
+            numEargs++;
+            continue;
+        };
+
+        // argv[i] has wildcard token(s)
+        glob_t glob_result;
+        struct stat statbuf;
+        glob(argv[i], 0, NULL, &glob_result);
+
+        if (glob_result.gl_pathc == 0) {
+            // no matches
+            eargv[numEargs++] = argv[i];
+            if (numEargs >= MAXARGS) panic("too many arguments");
+            continue;
+        }
+        for (size_t j = 0; j < glob_result.gl_pathc; ++j) {
+            // only add to eargs if is path to file, and not path to dir
+            if (stat(glob_result.gl_pathv[j], &statbuf) == 0) {
+                if (S_ISREG(statbuf.st_mode)) {
+                    eargv[numEargs++] = strdup(glob_result.gl_pathv[j]);
+                    if (numEargs >= MAXARGS) panic("too many arguments");
+                }
+            }
+        }
+        globfree(&glob_result);
+    }
+    eargv[numEargs] = NULL;
 }
 
 void print_cmd_type(int type){
