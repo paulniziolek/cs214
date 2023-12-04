@@ -106,6 +106,7 @@ void execwhich(int fd, const char* arg) {
 const char* _getExecPath(const char* arg) {
     int traversalDirsLen = 3;
     const char* traversalDirs[] = {_BINPATH1, _BINPATH2, _BINPATH3};
+    if (arg[0] == '.' || arg[0] == '/') return arg;
 
     for (int i = 0; i < traversalDirsLen; i++) {
         int newPathLen = strlen(traversalDirs[i]) + strlen(arg) + 2; // +2 for the '/' after binpath and \0.
