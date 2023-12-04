@@ -10,67 +10,6 @@ void panic(char *msg) {
     exit(1);
 }
 
-//STRUCTS & ENUMS
-enum mode {
-    BASH,
-    CONSOLE
-};
-enum CMDTYPE {
-    execcmd,
-    redircmd,
-    pipecmd,
-    builtincmd,
-    conditioncmd
-};
-
-struct cmd {
-    int type;
-};
-struct execcmd {
-    int type; 
-    char *argv[MAXARGS];
-    char *eargv[MAXARGS]; //may change this to a linked list later
-};
-
-enum REDIRTYPE {
-    REDIR_IN,
-    REDIR_OUT,
-};
-struct redircmd {
-    int type;
-    struct cmd *cmd;
-    char *file;
-    int mode;
-    int fd;
-};
-
-struct pipecmd {
-    int type;
-    struct cmd *left;
-    struct cmd *right;
-};
-
-enum BUILTIN {
-    cd,
-    which,
-    pwd,
-};
-struct builtincmd {
-    int type;
-    int mode;
-    char *argv[MAXARGS];
-    char *eargv[MAXARGS]; //may change this to a linked list later
-};
-
-enum CONDITIONMODE {
-    _then,
-    _else
-};
-struct conditioncmd {
-    int type;
-    int mode;
-    struct cmd *cmd;
-};
 
 //CONSTRUCTORS
 struct conditioncmd *build_ccmd(int mode, struct cmd *cmd){
@@ -231,13 +170,12 @@ void print_cmd_type(int type){
 
 int main(int argc, char *argv[]) {
     char buff[MAXLINE];
-    memset(buff, 0, MAXLINE);
-    read(0, buff, MAXLINE);
 
-    struct cmd *cmd = parsecmd(buff, true);
-    if(cmd == NULL) panic("failed to parse command\n");
-    struct conditioncmd *ccmd = cmd;
-    print_cmd_type(ccmd->cmd->type);
+    while(readcmd(buff, MAXLINE)){
+        struct cmd *cmd = parsecmd(buff, true);
+        if(cmd == NULL) panic("invalid cmd is null\n");
+        print_cmd_type(cmd->type);
+    }
     
     return 0;    
 }
