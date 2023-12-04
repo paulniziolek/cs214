@@ -20,15 +20,15 @@ int input_fd = 0;
 int invalid_cmd = 0;
 
 //HELPER FUNCTIONS
-void panic(char *msg) {
+void panic(const char *msg) {
     write(1, msg, strlen(msg));
     exit(1);
 }
-void debug(char *msg) {
+void debug(const char *msg) {
     write(1, msg, strlen(msg));
 }
 
-void shell_print(char *msg) {
+void shell_print(const char *msg) {
     write(1,"mysh> ", strlen("mysh> "));
     write(1, msg, strlen(msg));
 }
@@ -36,32 +36,32 @@ void expandArgs(char* argv[], char* eargv[]);
 
 //CONSTRUCTORS
 struct conditioncmd *build_ccmd(int mode, struct cmd *cmd){
-    struct conditioncmd *ccmd = malloc(sizeof(struct conditioncmd));
+    struct conditioncmd *ccmd = (struct conditioncmd *)malloc(sizeof(struct conditioncmd));
     ccmd->type = conditioncmd;
     ccmd->mode = mode;
     ccmd->cmd = cmd;
     return ccmd;
 }
 struct execcmd *build_ecmd(char *name){
-    struct execcmd *ecmd = malloc(sizeof(struct execcmd));
+    struct execcmd *ecmd = (struct execcmd *)malloc(sizeof(struct execcmd));
     ecmd->type = execcmd;
-    ecmd->argv[0] = malloc(strlen(name));
+    ecmd->argv[0] = (char *)malloc(strlen(name));
     strcpy(ecmd->argv[0], name);
 
-    ecmd->eargv[0] = malloc(strlen(name));
+    ecmd->eargv[0] = (char *)malloc(strlen(name));
     strcpy(ecmd->eargv[0], name);
     
     return ecmd;
 }
 struct pipecmd *build_pcmd(struct cmd *left, struct cmd *right){
-    struct pipecmd *pcmd = malloc(sizeof(struct pipecmd));
+    struct pipecmd *pcmd = (struct pipecmd *)malloc(sizeof(struct pipecmd));
     pcmd->type = pipecmd;
     pcmd->left = left;
     pcmd->right = right;
     return pcmd;
 }
 struct builtincmd *build_bcmd(int mode){
-    struct builtincmd *bcmd = malloc(sizeof(struct builtincmd));
+    struct builtincmd *bcmd = (struct builtincmd *)malloc(sizeof(struct builtincmd));
     bcmd->argv[0] = (char *)malloc(strlen("builtincmd"));
     bcmd->eargv[0] = (char *)malloc(strlen("builtincmd"));
     bcmd->type = builtincmd;
@@ -69,10 +69,10 @@ struct builtincmd *build_bcmd(int mode){
     return bcmd;
 }
 struct redircmd *build_rcmd(struct cmd *cmd, char *file, int mode){
-    struct redircmd *rcmd = malloc(sizeof(struct redircmd));
+    struct redircmd *rcmd = (struct redircmd *)malloc(sizeof(struct redircmd));
     rcmd->type = redircmd;
     rcmd->cmd = cmd;
-    rcmd->file = malloc(strlen(file)); 
+    rcmd->file = (char *)malloc(strlen(file)); 
     strcpy(rcmd->file, file);
     rcmd->mode = mode;
     rcmd->fd = (mode == REDIR_IN) ? 0 : 1;
