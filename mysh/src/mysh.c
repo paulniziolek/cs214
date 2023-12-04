@@ -83,11 +83,7 @@ void runcmd(struct cmd *cmd){
         case execcmd:
             ecmd = (struct execcmd *) cmd;
             //print arguments
-            for(int i = 0; i < MAXARGS; i++){
-                if(ecmd->argv[i] == NULL) break;
-                write(1, ecmd->argv[i], strlen(ecmd->argv[i]));
-                write(1, "\n", 1);
-            }
+            execv(_getExecPath(ecmd->argv[0]), ecmd->argv);
             break;
         case redircmd:
             rcmd = (struct redircmd *) cmd;
