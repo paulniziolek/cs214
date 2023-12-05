@@ -186,6 +186,12 @@ void runcmd(struct cmd *cmd){
             break;
         case pipecmd:
             pcmd = (struct pipecmd *) cmd;
+            // ignore pipecmd if cmd->left is redirecting output. we only run pcmd->left.
+            if (pcmd->left->type == redircmd && ((struct redircmd *)pcmd->left)->mode == REDIR_OUT) {
+                runcmd(pcmd->left);
+                break;
+            }
+
             if(pipe(pipefd) == -1) {
                 debug("pipe failed\n");
                 last_status = 1;
