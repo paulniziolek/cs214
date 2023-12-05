@@ -68,5 +68,20 @@ Executing multiple piped `sh concurrency_test.sh` within the `mysh` instance, su
 will test the concurrency of piped commands. Each `concurrency_test.sh` has a `sleep 3`, and the whole command being executed in ~3 seconds
 validates that piping supports concurrency. The program will print `hello` at first, and `wokeup` after 3 seconds. 
 
+Finally, the validity of most functions and edge cases are tested by running a batch script `build/mysh batch.sh`, 
+which covers all points mentioned in this README.
 
+The expected output should be:
+"Creating batch test file..."
+/some/path/mysh
+/some/path/
+/bin/ls
+HelloWorld
+PipingOverride
+PipingOverride
+redirection_test
+FILE_EXISTS
+CMakeLists.txt  README.txt      test_output.txt
+redirection_test
+Finished Running
 
