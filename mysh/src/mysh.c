@@ -265,7 +265,7 @@ struct cmd *parsecmd(char *buff, bool first){
         return cmd; //something went wrong
     }
     if(first && !strcmp(tok,"exit")) {
-        if(!bash_mode) shell_print("goodbye :)\n");
+        if(!bash_mode) shell_print("Exiting mysh...\ngoodbye :)\n");
         exit(0);
     }
     //conditions
@@ -406,6 +406,8 @@ int main(int argc, char *argv[]) {
     else input_fd = open(argv[1], O_RDONLY);
 
     if(input_fd < 0) panic("could not open file\n");
+
+    shell_print(welcomeMsg);
 
     while(readcmd(buff, MAXLINE)){
         struct cmd *cmd = parsecmd(buff, true);

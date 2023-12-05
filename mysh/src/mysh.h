@@ -66,4 +66,11 @@ struct conditioncmd {
     struct cmd *cmd;
 };
 
+const char* welcomeMsg = "\n\
+               _   \n\
+ _____ _ _ ___| |_ \n\
+|     | | |_ -|   |\n\
+|_|_|_|_  |___|_|_|\n\
+      |___|        \n\n\n";
+
 #endif
