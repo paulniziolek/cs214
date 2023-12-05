@@ -18,7 +18,8 @@ For example, if a command is a pipe, such as `pwd | ls`,
 the tree will consist of a `pipe cmd` as a root node, with `builtin cmd: pwd` and `exec cmd: ls` as its children.
 
 BATCH MODE:
-Running the executable followed by a filepath will run the file at a specified location in batch mode, and quit after it finishes.
+Running the executable followed by a filepath will run the file at a specified location in batch mode.
+Batch mode will run a file until EOF is reached, `exit` command is ran, or an empty line is ran. 
 
 INTERACTIVE MODE:
 Running the executable will prompt the entry of `mysh` and run until the `exit` command. 
@@ -56,5 +57,16 @@ WILDCARDS:
 If arguments are given, an argument can be a wildcard argument if `*` is in the argument (can be multiple *). 
 Wildcard arguments will search for all files that match a given pattern, such as `*.c`. If no files are found, then the
 wildcard argument itself is returned as an argument to the command. Otherwise, all file paths are provided as arguments to the command. 
+
+TESTING METHODOLOGY:
+These are our tests for the program:
+Running `build/builtins_test` will test all builtin functions on all expected inputs, as shown in the `builtins_test.c` file. 
+The output of this test will be various printed outputs from `which`, `cd`, and `pwd` commands. This ensured our builtin functions work. 
+
+Executing multiple piped `sh concurrency_test.sh` within the `mysh` instance, such as:
+`mysh> concurrency_test.sh | concurrency_test.sh | concurrency_test.sh | concurrency_test.sh | concurrency_test.sh | concurrency_test.sh`
+will test the concurrency of piped commands. Each `concurrency_test.sh` has a `sleep 3`, and the whole command being executed in ~3 seconds
+validates that piping supports concurrency. The program will print `hello` at first, and `wokeup` after 3 seconds. 
+
 
 
