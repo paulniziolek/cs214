@@ -44,6 +44,8 @@ struct conditioncmd *build_ccmd(int mode, struct cmd *cmd){
 }
 struct execcmd *build_ecmd(char *name){
     struct execcmd *ecmd = (struct execcmd *)malloc(sizeof(struct execcmd));
+    memset(ecmd->argv, 0, sizeof(ecmd->argv));
+    memset(ecmd->eargv, 0, sizeof(ecmd->eargv));
     ecmd->type = execcmd;
     ecmd->argv[0] = (char *)malloc(strlen(name));
     strcpy(ecmd->argv[0], name);
@@ -62,6 +64,8 @@ struct pipecmd *build_pcmd(struct cmd *left, struct cmd *right){
 }
 struct builtincmd *build_bcmd(int mode){
     struct builtincmd *bcmd = (struct builtincmd *)malloc(sizeof(struct builtincmd));
+    memset(bcmd->argv, 0, sizeof(bcmd->argv));
+    memset(bcmd->eargv, 0, sizeof(bcmd->eargv));
     bcmd->argv[0] = strdup("builtincmd");
     bcmd->eargv[0] = strdup("builtincmd");
     bcmd->type = builtincmd;
@@ -113,8 +117,8 @@ void free_cmd(struct cmd *cmd){
             break;
         case builtincmd:
             bcmd = (struct builtincmd *) cmd;
-            for(int i = 1; i < MAXARGS && bcmd->argv[i]!=NULL; i++) free(bcmd->argv[i]);
-            for(int i = 1; i < MAXARGS && bcmd->eargv[i]!=NULL; i++) free(bcmd->eargv[i]);
+            for(int i = 0; i < MAXARGS && bcmd->argv[i]!=NULL; i++) free(bcmd->argv[i]);
+            for(int i = 0; i < MAXARGS && bcmd->eargv[i]!=NULL; i++) free(bcmd->eargv[i]);
             free(bcmd);
             break;
         default:
