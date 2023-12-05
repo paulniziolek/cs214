@@ -6,9 +6,6 @@ USING CMAKE:
 In the `mysh` directory, run `./build.sh` (or `sh build.sh`) to build the project. 
 Now run `build/mysh` to run the executable. 
 
-USING MAKE:
-TODO
-
 DESCRIPTION:
 This project implements a basic shell CLI that supports piping, redirection, conditionals, builtin commands, and running external programs with support for batch input mode. 
 The design of the `mysh` project is based on polymorphic `cmds` (such as pipe, redirection, condition, executable cmd, builtin cmd).
