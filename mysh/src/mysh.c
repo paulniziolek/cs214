@@ -152,8 +152,9 @@ void runcmd(struct cmd *cmd){
                 execv(_getExecPath(ecmd->argv[0]), ecmd->eargv);
                 panic("exec failed\n"); //this is fine because terminates child process with status 1
             }
-            else waitpid(pid, &last_status, 0);
-            
+            else {
+                waitpid(pid, &last_status, 0);
+            }
             break;
         case redircmd:
             rcmd = (struct redircmd *) cmd;
@@ -165,9 +166,9 @@ void runcmd(struct cmd *cmd){
                         last_status = 1;
                         break;
                     }
-                    dup2(fd, 0);
+                    dup2(fd, 0), close(fd);
                     runcmd(rcmd->cmd);
-                    dup2(ogstdin, 0);
+                    dup2(ogstdin, 0),close(ogstdout);
                     break;
                 case REDIR_OUT:
                     fd = open(rcmd->file, O_WRONLY | O_CREAT | O_TRUNC, 0640), ogstdout = dup(1);
@@ -176,9 +177,9 @@ void runcmd(struct cmd *cmd){
                         last_status = 1;
                         break;
                     }
-                    dup2(fd, 1);
+                    dup2(fd, 1), close(fd);
                     runcmd(rcmd->cmd);
-                    dup2(ogstdout, 1);
+                    dup2(ogstdout, 1), close(ogstdout);
                     break;
                 default:
                     panic("unknown redirection mode\n");
@@ -186,11 +187,6 @@ void runcmd(struct cmd *cmd){
             break;
         case pipecmd:
             pcmd = (struct pipecmd *) cmd;
-            // ignore pipecmd if cmd->left is redirecting output. we only run pcmd->left.
-            if (pcmd->left->type == redircmd && ((struct redircmd *)pcmd->left)->mode == REDIR_OUT) {
-                runcmd(pcmd->left);
-                break;
-            }
 
             if(pipe(pipefd) == -1) {
                 debug("pipe failed\n");
@@ -199,16 +195,15 @@ void runcmd(struct cmd *cmd){
             }
             ogstdin = dup(0), ogstdout = dup(1);
 
-            dup2(pipefd[1], 1);
+            dup2(pipefd[1], 1), close(pipefd[1]);
             runcmd(pcmd->left);
-            dup2(ogstdout, 1);
-            close(pipefd[1]);
-
-            dup2(pipefd[0], 0);
+            dup2(ogstdout, 1), close(ogstdout);
+            
+            dup2(pipefd[0], 0), close(pipefd[0]);
             runcmd(pcmd->right);
-            dup2(ogstdin, 0);
-            close(pipefd[0]);
-
+            close(0);
+            dup2(ogstdin, 0), close(ogstdin);
+            
             break;
         case builtincmd:
             bcmd = (struct builtincmd *) cmd;
