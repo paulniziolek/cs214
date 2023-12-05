@@ -21,11 +21,11 @@ int invalid_cmd = 0;
 
 //HELPER FUNCTIONS
 void panic(const char *msg) {
-    write(1, msg, strlen(msg));
+    write(2, msg, strlen(msg));
     exit(1);
 }
 void debug(const char *msg) {
-    write(1, msg, strlen(msg));
+    write(2, msg, strlen(msg));
 }
 
 void shell_print(const char *msg) {
@@ -141,6 +141,7 @@ void runcmd(struct cmd *cmd){
     switch (cmd->type){
         case execcmd:
             ecmd = (struct execcmd *) cmd;
+            expandArgs(ecmd->argv, ecmd->eargv);
             pid = fork();
             if(pid < 0) {
                 debug("fork failed\n");
@@ -195,14 +196,17 @@ void runcmd(struct cmd *cmd){
             dup2(pipefd[1], 1);
             runcmd(pcmd->left);
             dup2(ogstdout, 1);
+            close(pipefd[1]);
 
             dup2(pipefd[0], 0);
             runcmd(pcmd->right);
             dup2(ogstdin, 0);
+            close(pipefd[0]);
 
             break;
         case builtincmd:
             bcmd = (struct builtincmd *) cmd;
+            expandArgs(bcmd->argv, bcmd->eargv);
             switch (bcmd->mode){
                 case cd:
                     last_status=execcd(bcmd->eargv[1]);
@@ -300,7 +304,6 @@ struct cmd *parsecmd(char *buff, bool first){
             i++;
             bcmd->argv[i]=NULL;
         }
-        expandArgs(bcmd->argv, bcmd->eargv);
     }
     else{ //exec commands
         ecmd = build_ecmd(tok);
@@ -331,13 +334,13 @@ struct cmd *parsecmd(char *buff, bool first){
             i++;
             ecmd->argv[i]=NULL;
         }
-        expandArgs(ecmd->argv, ecmd->eargv);
     }
     return cmd;
 }
 
 void expandArgs(char* argv[], char* eargv[]) {
     int numEargs = 1;
+    //print og args
     for (int i = 1; i < MAXARGS; i++) {
         if (argv[i] == NULL) break;
         if (strstr(argv[i], "*") == NULL) {
