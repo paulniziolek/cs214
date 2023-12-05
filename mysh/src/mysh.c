@@ -187,23 +187,33 @@ void runcmd(struct cmd *cmd){
             break;
         case pipecmd:
             pcmd = (struct pipecmd *) cmd;
-
             if(pipe(pipefd) == -1) {
                 debug("pipe failed\n");
                 last_status = 1;
                 break;
             }
-            ogstdin = dup(0), ogstdout = dup(1);
 
-            dup2(pipefd[1], 1), close(pipefd[1]);
-            runcmd(pcmd->left);
-            dup2(ogstdout, 1), close(ogstdout);
-            
-            dup2(pipefd[0], 0), close(pipefd[0]);
-            runcmd(pcmd->right);
-            close(0);
-            dup2(ogstdin, 0), close(ogstdin);
-            
+            pid = fork();
+            if(pid < 0) panic("fork failed\n");
+
+            if(pid == 0) { //left child
+                dup2(pipefd[1], 1), close(pipefd[1]),close(pipefd[0]);
+                runcmd(pcmd->left);
+                exit(last_status);
+            }
+            else {
+                pid = fork();
+                if(pid < 0) panic("fork failed\n");
+                if(pid == 0) { //right child
+                    dup2(pipefd[0], 0), close(pipefd[0]), close(pipefd[1]);
+                    runcmd(pcmd->right);
+                    exit(last_status);
+                }
+                else{
+                    close(pipefd[0]), close(pipefd[1]);
+                    waitpid(pid, &last_status, 0); //wait for right child to finish
+                }
+            }
             break;
         case builtincmd:
             bcmd = (struct builtincmd *) cmd;
