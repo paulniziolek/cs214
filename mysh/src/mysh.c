@@ -342,7 +342,7 @@ void expandArgs(char* argv[], char* eargv[]) {
         if (argv[i] == NULL) break;
         if (strstr(argv[i], "*") == NULL) {
             // not a wildcard
-            eargv[numEargs] = argv[i];
+            eargv[numEargs] = strdup(argv[i]);
             numEargs++;
             continue;
         };
@@ -354,7 +354,7 @@ void expandArgs(char* argv[], char* eargv[]) {
 
         if (glob_result.gl_pathc == 0) {
             // no matches
-            eargv[numEargs++] = argv[i];
+            eargv[numEargs++] = strdup(argv[i]);
             if (numEargs >= MAXARGS) panic("too many arguments");
             continue;
         }
