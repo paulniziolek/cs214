@@ -62,8 +62,8 @@ struct pipecmd *build_pcmd(struct cmd *left, struct cmd *right){
 }
 struct builtincmd *build_bcmd(int mode){
     struct builtincmd *bcmd = (struct builtincmd *)malloc(sizeof(struct builtincmd));
-    bcmd->argv[0] = (char *)malloc(strlen("builtincmd"));
-    bcmd->eargv[0] = (char *)malloc(strlen("builtincmd"));
+    bcmd->argv[0] = strdup("builtincmd");
+    bcmd->eargv[0] = strdup("builtincmd");
     bcmd->type = builtincmd;
     bcmd->mode = mode;
     return bcmd;
@@ -113,8 +113,8 @@ void free_cmd(struct cmd *cmd){
             break;
         case builtincmd:
             bcmd = (struct builtincmd *) cmd;
-            for(int i = 0; i < MAXARGS && bcmd->argv[i]!=NULL; i++) free(bcmd->argv[i]);
-            for(int i = 0; i < MAXARGS && bcmd->eargv[i]!=NULL; i++) free(bcmd->eargv[i]);
+            for(int i = 1; i < MAXARGS && bcmd->argv[i]!=NULL; i++) free(bcmd->argv[i]);
+            for(int i = 1; i < MAXARGS && bcmd->eargv[i]!=NULL; i++) free(bcmd->eargv[i]);
             free(bcmd);
             break;
         default:
@@ -218,6 +218,7 @@ void runcmd(struct cmd *cmd){
         case builtincmd:
             bcmd = (struct builtincmd *) cmd;
             expandArgs(bcmd->argv, bcmd->eargv);
+            //debugprint argv, then eargv
             switch (bcmd->mode){
                 case cd:
                     last_status=execcd(bcmd->eargv[1]);
