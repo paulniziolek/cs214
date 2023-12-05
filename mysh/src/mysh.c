@@ -423,7 +423,7 @@ int main(int argc, char *argv[]) {
 
     if(input_fd < 0) panic("could not open file\n");
 
-    shell_print(welcomeMsg);
+    if(!bash_mode) shell_print(welcomeMsg);
 
     while(readcmd(buff, MAXLINE)){
         struct cmd *cmd = parsecmd(buff, true);
