@@ -4,8 +4,7 @@ project(ttts)
 include_directories(src)
 
 # Server Executable
-add_executable(ttts src/ttts.c)
+add_executable(ttts src/ttts.c src/sbuf.c)
 
 # Client Executable
 add_executable(tttc src/tttc.c)
-
