@@ -30,7 +30,6 @@ void *get_in_addr(struct sockaddr *sa)
     if (sa->sa_family == AF_INET) {
         return &(((struct sockaddr_in*)sa)->sin_addr);
     }
-
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
@@ -505,7 +504,7 @@ int openlistenfd() {
         exit(1);
     }
 
-    if (inet_ntop(p->ai_family, get_in_addr(p->ai_addr), ipstr, INET6_ADDRSTRLEN) == NULL) {
+    if (inet_ntop(p->ai_addr->sa_family, get_in_addr(p->ai_addr), ipstr, INET6_ADDRSTRLEN) == NULL) {
         perror("inet_ntop");
     }
 
