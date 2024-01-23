@@ -34,13 +34,13 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-void *get_in_port(struct sockaddr *sa)
+uint16_t get_in_port(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_port);
+        return (((struct sockaddr_in*)sa)->sin_port);
     }
 
-    return &(((struct sockaddr_in6*)sa)->sin6_port);
+    return (((struct sockaddr_in6*)sa)->sin6_port);
 }
 
 void sigchld_handler(int s)
@@ -496,19 +496,20 @@ int openlistenfd() {
             perror("server: bind");
             continue;
         }
-        freeaddrinfo(listp);
         break;
     }
+    freeaddrinfo(listp);
 
     if (p == NULL) {
         fprintf(stderr, "server: failed to bind");
         exit(1);
     }
 
-    inet_ntop(p->ai_family, get_in_addr((SA *) &p->ai_addr), ipstr, sizeof(ipstr));
-    uint16_t port = ntohs(*(uint16_t *)get_in_port((SA *) &p->ai_addr));
+    if (inet_ntop(p->ai_family, get_in_addr(p->ai_addr), ipstr, INET6_ADDRSTRLEN) == NULL) {
+        perror("inet_ntop");
+    }
 
-    printf("server: attempting to start server on %s, port %d\n", ipstr, port);
+    printf("server: attempting to start server on %s, port %d\n", ipstr, ntohs(get_in_port(p->ai_addr)));
 
     if (listen(listenfd, BACKLOG) == -1) {
         perror("listen");
