@@ -25,7 +25,6 @@
 
 #define SA struct sockaddr
 
-// get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
@@ -33,6 +32,15 @@ void *get_in_addr(struct sockaddr *sa)
     }
 
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+void *get_in_port(struct sockaddr *sa)
+{
+    if (sa->sa_family == AF_INET) {
+        return &(((struct sockaddr_in*)sa)->sin_port);
+    }
+
+    return &(((struct sockaddr_in6*)sa)->sin6_port);
 }
 
 void sigchld_handler(int s)
@@ -455,6 +463,7 @@ Command* receiveMessage(Player *player) {
 }
 
 int openlistenfd() {
+    char ipstr[INET6_ADDRSTRLEN];
     int listenfd;
     struct addrinfo *p, *listp, hints;
     int rc;
@@ -495,6 +504,11 @@ int openlistenfd() {
         fprintf(stderr, "server: failed to bind");
         exit(1);
     }
+
+    inet_ntop(p->ai_family, get_in_addr((SA *) &p->ai_addr), ipstr, sizeof(ipstr));
+    uint16_t port = ntohs(*(uint16_t *)get_in_port((SA *) &p->ai_addr));
+
+    printf("server: attempting to start server on %s, port %d\n", ipstr, port);
 
     if (listen(listenfd, BACKLOG) == -1) {
         perror("listen");
